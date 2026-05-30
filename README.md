@@ -1,75 +1,127 @@
 # ShopMVP — Tienda + Panel Admin
 
-MVP de tienda online con panel de administración. React + Vite, desplegable en Vercel.
+MVP de tienda online con panel de administración completo.
 
 ## Stack
-- **React 18** + **React Router v6**
-- **Vite** (build tool / dev server)
-- **localStorage** para persistencia (sin backend)
-- **Lucide React** para iconos
-- **Vercel** para despliegue
+- **React 18** + React Router v6 + Vite
+- **Supabase** — base de datos PostgreSQL + auth (con fallback a localStorage)
+- **Stripe** — pagos con tarjeta (con modo simulación si no hay credenciales)
+- **Cloudinary** — subida de imágenes (con fallback a object URL local)
+- **Resend** — emails de confirmación de pedido
+- **Vercel** — despliegue + Edge Functions para Stripe y Resend
 
-## Estructura
-```
-src/
-  context/
-    StoreContext.jsx   ← Estado global (productos, categorías, carrito)
-  components/
-    Navbar.jsx
-    ProductCard.jsx
-  pages/
-    StoreFront.jsx     ← Tienda principal
-    ProductDetail.jsx  ← Detalle de producto
-    CartPage.jsx       ← Carrito
-    admin/
-      AdminLayout.jsx  ← Sidebar + layout admin
-      AdminDashboard.jsx
-      AdminProducts.jsx  ← CRUD productos
-      AdminCategories.jsx ← CRUD categorías
-```
+---
 
-## Desarrollo local
+## Arrancar en local
 
 ```bash
+cp .env.example .env.local   # edita con tus credenciales (o deja vacío para modo demo)
 npm install
 npm run dev
 # → http://localhost:5173
 ```
 
+**Sin credenciales todo funciona en modo demo:**
+- Datos en localStorage
+- Login demo: `admin@artesana.es` / `admin1234`
+- Pagos simulados con tarjetas de prueba
+
+---
+
 ## Rutas
 
-| Ruta                | Descripción              |
-|---------------------|--------------------------|
-| `/`                 | Tienda principal         |
-| `/producto/:id`     | Detalle de producto      |
-| `/carrito`          | Carrito de compra        |
-| `/admin`            | Dashboard admin          |
-| `/admin/productos`  | CRUD de productos        |
-| `/admin/categorias` | CRUD de categorías       |
+| Ruta                  | Descripción                   |
+|-----------------------|-------------------------------|
+| `/`                   | Tienda principal              |
+| `/producto/:id`       | Detalle de producto           |
+| `/carrito`            | Carrito                       |
+| `/checkout`           | Pago (Stripe real o simulado) |
+| `/admin`              | Dashboard admin               |
+| `/admin/productos`    | CRUD productos + Cloudinary   |
+| `/admin/categorias`   | CRUD categorías               |
+
+---
+
+## Variables de entorno
+
+Copia `.env.example` a `.env.local` y rellena las que tengas:
+
+```
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=              ← solo en Vercel (no exponer al cliente)
+VITE_CLOUDINARY_CLOUD_NAME=
+VITE_CLOUDINARY_UPLOAD_PRESET=
+RESEND_API_KEY=                 ← solo en Vercel
+RESEND_FROM=
+```
+
+---
 
 ## Desplegar en Vercel
 
-### Opción A — Vercel CLI
 ```bash
-npm install -g vercel
+npm i -g vercel
 vercel
 ```
 
-### Opción B — GitHub + Vercel Dashboard
-1. Sube el proyecto a GitHub
-2. Ve a [vercel.com](https://vercel.com) → "New Project"
-3. Importa tu repositorio
-4. Configuración automática (detecta Vite):
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-5. Deploy ✓
+O conecta el repositorio en [vercel.com](https://vercel.com) y añade las variables de entorno en **Settings → Environment Variables**.
 
-El archivo `vercel.json` ya incluye el rewrite necesario para el SPA routing.
+- Build: `npm run build`
+- Output: `dist`
+- El `vercel.json` ya configura el SPA routing y las Edge Functions en `/api/`
 
-## Próximos pasos (producción)
+---
 
-- [ ] Reemplazar localStorage con backend real (Supabase, Firebase, etc.)
-- [ ] Añadir autenticación al panel admin
-- [ ] Integrar pasarela de pago (Stripe, Redsys)
-- [ ] Subida de imágenes (Cloudinary, S3)
-- [ ] SEO + Open Graph meta tags
+## SQL para Supabase
+
+Ejecuta esto en **Supabase → SQL Editor** para crear las tablas:
+
+```sql
+-- Categorías
+create table categories (
+  id text primary key,
+  name text not null,
+  slug text not null unique,
+  created_at timestamptz default now()
+);
+
+-- Productos
+create table products (
+  id text primary key,
+  name text not null,
+  price numeric not null,
+  "categoryId" text references categories(id),
+  image text,
+  description text,
+  stock int default 0,
+  active boolean default true,
+  created_at timestamptz default now()
+);
+
+-- Habilitar realtime
+alter publication supabase_realtime add table products;
+alter publication supabase_realtime add table categories;
+
+-- RLS: lectura pública, escritura solo autenticados
+alter table products   enable row level security;
+alter table categories enable row level security;
+
+create policy "Lectura pública" on products   for select using (true);
+create policy "Lectura pública" on categories for select using (true);
+create policy "Solo admin"      on products   for all using (auth.role() = 'authenticated');
+create policy "Solo admin"      on categories for all using (auth.role() = 'authenticated');
+```
+
+---
+
+## Modos de operación
+
+| Variable faltante          | Comportamiento                                      |
+|---------------------------|-----------------------------------------------------|
+| Sin Supabase              | localStorage + login demo                           |
+| Sin `VITE_STRIPE_*`       | Modo simulación con tarjetas de prueba              |
+| Sin Cloudinary            | URL de objeto local (solo válido en la sesión)      |
+| Sin Resend                | Pedido se confirma, email se omite silenciosamente  |
+
