@@ -1,32 +1,17 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Trash2, Plus, Minus, ArrowLeft, CheckCircle } from 'lucide-react'
+import React from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Trash2, Plus, Minus, ArrowLeft, CreditCard } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import { useStore } from '../context/StoreContext'
 import './CartPage.css'
 
 export default function CartPage() {
   const { cart, products, cartTotal, dispatch } = useStore()
-  const [ordered, setOrdered] = useState(false)
+  const navigate = useNavigate()
 
-  const items = cart.map(i => ({ ...i, product: products.find(p => p.id === i.productId) })).filter(i => i.product)
-
-  function handleOrder() {
-    dispatch({ type: 'CART_CLEAR' })
-    setOrdered(true)
-  }
-
-  if (ordered) return (
-    <div>
-      <Navbar />
-      <div className="cart-success">
-        <CheckCircle size={48} color="var(--success)" />
-        <h2>¡Pedido confirmado!</h2>
-        <p>Gracias por tu compra. Recibirás confirmación por email.</p>
-        <Link to="/" className="btn-primary">Seguir comprando</Link>
-      </div>
-    </div>
-  )
+  const items = cart
+    .map(i => ({ ...i, product: products.find(p => p.id === i.productId) }))
+    .filter(i => i.product)
 
   return (
     <div>
@@ -75,13 +60,19 @@ export default function CartPage() {
                 <div className="summary-row"><span>Subtotal</span><span>{cartTotal.toFixed(2)} €</span></div>
                 <div className="summary-row"><span>Envío</span><span>Gratis</span></div>
                 <div className="summary-total"><span>Total</span><span>{cartTotal.toFixed(2)} €</span></div>
-                <button className="btn-primary full" onClick={handleOrder}>Confirmar pedido</button>
-                <p className="summary-note">Este es un MVP — no se procesa pago real.</p>
+                <button className="btn-primary full" onClick={() => navigate('/checkout')}>
+                  <CreditCard size={16} />
+                  Ir al pago
+                </button>
               </div>
             </div>
           )}
         </div>
       </main>
+
+      <footer className="footer">
+        <p>© {new Date().getFullYear()} Artesana</p>
+      </footer>
     </div>
   )
 }
