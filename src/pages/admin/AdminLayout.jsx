@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { Outlet, NavLink, Link } from 'react-router-dom'
 import { LayoutDashboard, Package, Tag, Store, Menu, X, LogOut, User } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { hasSupabase } from '../../lib/supabase'
 import Login from './Login'
 import './AdminLayout.css'
 
@@ -68,7 +67,6 @@ export default function AdminLayout() {
         <header className="admin-topbar">
           <button className="topbar-burger" onClick={() => setOpen(true)}><Menu size={20} /></button>
           <span className="topbar-label">Panel de administración</span>
-          {!hasSupabase && <span className="topbar-mode">modo demo</span>}
         </header>
         <main className="admin-content">
           <Outlet />

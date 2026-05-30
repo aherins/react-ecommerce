@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LogIn, Info } from 'lucide-react'
+import { LogIn } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { hasSupabase } from '../../lib/supabase'
 import './Login.css'
 
-// SVG del logo de Google (inline, sin dependencias)
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -20,10 +18,10 @@ function GoogleIcon() {
 export default function Login() {
   const { signIn, signInWithGoogle } = useAuth()
   const navigate = useNavigate()
-  const [email,       setEmail]       = useState('')
-  const [password,    setPassword]    = useState('')
-  const [error,       setError]       = useState('')
-  const [loading,     setLoading]     = useState(false)
+  const [email,         setEmail]         = useState('')
+  const [password,      setPassword]      = useState('')
+  const [error,         setError]         = useState('')
+  const [loading,       setLoading]       = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
 
   async function handleSubmit(e) {
@@ -40,22 +38,12 @@ export default function Login() {
     setError('')
     setLoadingGoogle(true)
     const { error } = await signInWithGoogle()
-    // Con Supabase real: redirige a Google → vuelve a /admin automáticamente
-    // En modo demo: setUser ya ocurrió en signInWithGoogle, redirigimos aquí
-    if (!error && !hasSupabase) {
-      navigate('/admin')
-      return
-    }
+    // Si hay error antes de la redirección a Google
     if (error) {
       setError(error.message)
       setLoadingGoogle(false)
     }
-    // Si no hay error con Supabase real, la redirección la gestiona el proveedor OAuth
-  }
-
-  function fillDemo() {
-    setEmail('admin@artesana.es')
-    setPassword('admin1234')
+    // Si no hay error, Supabase redirige al proveedor → vuelve a /admin
   }
 
   return (
@@ -64,34 +52,15 @@ export default function Login() {
         <div className="login-logo">ARTESANA</div>
         <h1 className="login-title">Panel de administración</h1>
 
-        {!hasSupabase && (
-          <div className="login-demo-banner">
-            <Info size={15} />
-            <span>
-              Modo demo (sin Supabase) —{' '}
-              <button onClick={fillDemo}>rellenar credenciales</button>
-            </span>
-          </div>
-        )}
-
-        {/* ── Google OAuth ─────────────────────────────────────────────── */}
-        <button
-          className="login-google-btn"
-          onClick={handleGoogle}
-          disabled={loadingGoogle}
-          type="button"
-        >
+        <button className="login-google-btn" onClick={handleGoogle} disabled={loadingGoogle} type="button">
           {loadingGoogle
-            ? <span className="spinner dark-spinner" />
-            : <><GoogleIcon />{hasSupabase ? 'Continuar con Google' : 'Demo Google'}</>
+            ? <span className="dark-spinner" />
+            : <><GoogleIcon />Continuar con Google</>
           }
         </button>
 
-        <div className="login-divider">
-          <span>o accede con email</span>
-        </div>
+        <div className="login-divider"><span>o accede con email</span></div>
 
-        {/* ── Email + contraseña ───────────────────────────────────────── */}
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-row">
             <label>Email</label>
