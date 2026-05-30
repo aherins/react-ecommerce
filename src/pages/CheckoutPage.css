@@ -90,7 +90,7 @@
 .mock-label { font-size: 12px; }
 .mock-label.success  { color: var(--success); }
 .mock-label.declined { color: var(--danger); }
-.mock-label.3ds      { color: #7c3aed; }
+.mock-label.secure-3ds      { color: #7c3aed; }
 
 /* Stripe card element */
 .stripe-card-wrap {
