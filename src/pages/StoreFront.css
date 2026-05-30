@@ -1,0 +1,113 @@
+.storefront { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* Hero */
+.hero {
+  background: var(--cream);
+  padding: 80px 24px 72px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  animation: fadeUp 0.6s ease both;
+}
+
+.hero-tag {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 16px;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 80px);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+
+.hero-sub {
+  font-size: 16px;
+  color: var(--muted);
+  font-weight: 300;
+  max-width: 360px;
+}
+
+/* Shop */
+.shop-main {
+  flex: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+  width: 100%;
+}
+
+.shop-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.filter-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+}
+
+.filter-btn {
+  padding: 6px 16px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--paper);
+  color: var(--muted);
+  transition: all var(--transition);
+}
+
+.filter-btn:hover { border-color: var(--ink); color: var(--ink); }
+.filter-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.search-input {
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 7px 18px;
+  background: var(--white);
+  outline: none;
+  transition: border-color var(--transition);
+  min-width: 200px;
+}
+
+.search-input:focus { border-color: var(--ink); }
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 32px 24px;
+}
+
+.shop-empty {
+  text-align: center;
+  padding: 80px 0;
+  color: var(--muted);
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.footer a { color: var(--muted); text-decoration: underline; }
