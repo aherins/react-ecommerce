@@ -1,0 +1,58 @@
+.stats-page { max-width: 1000px; animation: fadeUp 0.4s ease both; }
+
+.stats-kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+
+.stat-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:20px;
+  border-top:3px solid var(--card-color);
+}
+.stat-card-icon { width:36px; height:36px; border-radius:var(--radius); background:color-mix(in srgb,var(--card-color) 12%,transparent); color:var(--card-color); display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
+.stat-card-value { font-family:var(--font-display); font-size:26px; font-weight:800; }
+.stat-card-label { font-size:13px; color:var(--muted); margin-top:2px; }
+.stat-card-sub { font-size:12px; color:var(--muted); margin-top:4px; }
+.stat-trend { display:flex; align-items:center; gap:4px; font-size:12px; margin-top:8px; }
+.stat-trend.up { color:var(--success); }
+.stat-trend.down { color:var(--danger); }
+
+.stats-cols { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.stats-panel {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:24px;
+}
+.stats-panel h2 { font-family:var(--font-display); font-size:16px; font-weight:700; margin-bottom:20px; }
+.stats-empty { color:var(--muted); font-size:14px; }
+
+/* Bar chart */
+.bar-chart { display:flex; align-items:flex-end; gap:8px; height:140px; padding-top:24px; }
+.bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; }
+.bar-val { font-size:10px; color:var(--muted); height:14px; }
+.bar { width:100%; background:var(--accent); border-radius:3px 3px 0 0; min-height:3px; transition:height 0.4s ease; }
+.bar-label { font-size:11px; color:var(--muted); }
+
+/* Mini bars */
+.mini-bar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.mini-bar-label { font-size:13px; min-width:90px; }
+.mini-bar-track { flex:1; height:8px; background:var(--cream); border-radius:99px; overflow:hidden; }
+.mini-bar-fill { height:100%; border-radius:99px; transition:width 0.6s ease; }
+.mini-bar-val { font-size:12px; font-weight:600; min-width:24px; text-align:right; }
+
+/* Top products */
+.top-product-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.top-product-row img { width:40px; height:40px; border-radius:var(--radius); object-fit:cover; flex-shrink:0; }
+.top-product-info { flex:1; }
+.top-product-name { font-size:13px; font-weight:500; margin-bottom:4px; }
+.top-product-bar { height:6px; background:var(--cream); border-radius:99px; overflow:hidden; }
+.top-product-fill { height:100%; background:var(--accent); border-radius:99px; transition:width 0.6s ease; }
+.top-product-qty { font-size:12px; font-weight:600; color:var(--muted); min-width:40px; text-align:right; }
+
+/* Low stock */
+.stats-alert { border-color:#fde68a; background:#fffbeb; }
+.low-stock-list { display:flex; flex-direction:column; gap:8px; }
+.low-stock-row { display:flex; align-items:center; gap:10px; }
+.low-stock-row img { width:32px; height:32px; border-radius:var(--radius); object-fit:cover; }
+.low-stock-name { flex:1; font-size:13px; }
+.low-stock-qty { font-size:12px; font-weight:700; color:var(--danger); }
+.low-stock-qty.zero { color:#991b1b; background:#fee2e2; padding:2px 8px; border-radius:99px; }
+
+@media (max-width:700px) { .stats-cols { grid-template-columns:1fr; } }

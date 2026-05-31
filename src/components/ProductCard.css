@@ -67,3 +67,19 @@
   color: var(--muted);
   font-weight: 300;
 }
+
+.product-card-wish {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 0.2s ease, color 0.2s ease, background 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+.product-card:hover .product-card-wish { opacity: 1; }
+.product-card-wish.active { opacity: 1; color: #e44d8a; background: #fff; }
+.product-card-wish:hover { color: #e44d8a; }
