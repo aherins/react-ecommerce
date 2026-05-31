@@ -6,7 +6,7 @@ import StoreFront from './pages/StoreFront'
 import ProductDetail from './pages/ProductDetail'
 import CartPage from './pages/CartPage'
 import CheckoutPage from './pages/CheckoutPage'
-import WishlistPage from './pages/WishlistPage'
+//import WishlistPage from './pages/WishlistPage'
 import ContactPage from './pages/ContactPage'
 import TrackingPage from './pages/TrackingPage'
 import AuthPage from './pages/AuthPage'
@@ -28,7 +28,7 @@ export default function App() {
             <Route path="/producto/:id" element={<ProductDetail />} />
             <Route path="/carrito"     element={<CartPage />} />
             <Route path="/checkout"    element={<CheckoutPage />} />
-            <Route path="/deseos"      element={<WishlistPage />} />
+            {/* <Route path="/deseos"      element={<WishlistPage />} /> */}
             <Route path="/contacto"    element={<ContactPage />} />
             <Route path="/seguimiento" element={<TrackingPage />} />
             <Route path="/seguimiento/:orderId" element={<TrackingPage />} />
