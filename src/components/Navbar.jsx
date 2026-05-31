@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ShoppingBag, Menu, X, Settings } from 'lucide-react'
+import { ShoppingBag, Menu, X, Settings, Heart, User, Package } from 'lucide-react'
 import { useStore } from '../context/StoreContext'
 import './Navbar.css'
 
 export default function Navbar() {
-  const { cartCount, categories } = useStore()
+  const { cartCount, wishlist, categories } = useStore()
   const [menuOpen, setMenuOpen] = useState(false)
-  const navigate = useNavigate()
 
   return (
     <header className="navbar">
@@ -19,17 +18,26 @@ export default function Navbar() {
           {categories.map(c => (
             <Link key={c.id} to={`/?cat=${c.slug}`} onClick={() => setMenuOpen(false)}>{c.name}</Link>
           ))}
+          <Link to="/contacto" onClick={() => setMenuOpen(false)}>Contacto</Link>
+          <Link to="/seguimiento" onClick={() => setMenuOpen(false)}>Seguimiento</Link>
         </nav>
 
         <div className="navbar-actions">
-          <Link to="/carrito" className="navbar-cart" aria-label="Carrito">
-            <ShoppingBag size={20} />
-            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+          <Link to="/deseos" className="navbar-icon-btn" aria-label="Lista de deseos">
+            <Heart size={20} />
+            {wishlist?.length > 0 && <span className="icon-badge wish-badge">{wishlist.length}</span>}
           </Link>
-          <Link to="/admin" className="navbar-admin" title="Administración">
+          <Link to="/cuenta" className="navbar-icon-btn" aria-label="Mi cuenta">
+            <User size={20} />
+          </Link>
+          <Link to="/carrito" className="navbar-icon-btn" aria-label="Carrito">
+            <ShoppingBag size={20} />
+            {cartCount > 0 && <span className="icon-badge">{cartCount}</span>}
+          </Link>
+          <Link to="/admin" className="navbar-icon-btn navbar-admin" title="Admin">
             <Settings size={18} />
           </Link>
-          <button className="navbar-burger" onClick={() => setMenuOpen(o => !o)} aria-label="Menú">
+          <button className="navbar-burger" onClick={() => setMenuOpen(o => !o)}>
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
