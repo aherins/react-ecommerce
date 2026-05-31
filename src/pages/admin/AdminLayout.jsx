@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Outlet, NavLink, Link } from 'react-router-dom'
-import { Store, Menu, X, LogOut, User } from 'lucide-react'
+import { LayoutDashboard, Package, Tag, Store, Menu, X, LogOut, User, ShoppingBag, BarChart2, Truck } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { navForRole, ROLE_LABELS, ROLE_COLORS } from '../../lib/roles'
 import Login from './Login'

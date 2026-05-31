@@ -4,6 +4,9 @@ import { can, DEMO_USERS } from '../lib/roles'
 
 const AuthContext = createContext(null)
 
+const DEMO_EMAIL    = 'admin@artesana.es'
+const DEMO_PASSWORD = 'admin1234'
+
 export function AuthProvider({ children }) {
   const [user,    setUser]    = useState(null)
   const [role,    setRole]    = useState(null)   // rol resuelto
@@ -55,7 +58,6 @@ export function AuthProvider({ children }) {
       setUser(u)
       await resolveRole(u)
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
@@ -90,6 +92,10 @@ export function AuthProvider({ children }) {
     return supabase.auth.signUp({ email, password, options: { data: metadata } })
   }
 
+  async function signUp(email, password, metadata = {}) {
+    if (!hasSupabase) return { error: { message: 'Registro no disponible en modo demo' } }
+    return supabase.auth.signUp({ email, password, options: { data: metadata } })
+  }
   // ── Google OAuth ────────────────────────────────────────────────────────────
   async function signInWithGoogle() {
     if (!hasSupabase) {
