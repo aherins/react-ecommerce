@@ -147,9 +147,6 @@ export function AuthProvider({ children }) {
     >
       {children}
     </AuthContext.Provider>
-
-      {children}
-    </AuthContext.Provider>
   )
 }
 
