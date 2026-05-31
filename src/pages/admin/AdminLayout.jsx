@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Outlet, NavLink, Link } from 'react-router-dom'
-import { LayoutDashboard, Package, Tag, Store, Menu, X, LogOut, User, ShoppingBag, BarChart2, Truck } from 'lucide-react'
+import { Store, Menu, X, LogOut, User, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { navForRole, ROLE_LABELS, ROLE_COLORS } from '../../lib/roles'
 import Login from './Login'
@@ -18,15 +18,13 @@ function RoleBadge({ role }) {
 
 function UserChip({ user, role }) {
   const avatar = user?.user_metadata?.avatar_url
-  const name = user?.user_metadata?.full_name || user?.email || ''
+  const name   = user?.user_metadata?.full_name || user?.email || ''
   return (
     <div className="admin-user">
       <div className="admin-user-top">
-        {avatar ? (
-          <img src={avatar} alt={name} className="admin-avatar" referrerPolicy="no-referrer" />
-        ) : (
-          <div className="admin-avatar-placeholder"><User size={14} /></div>
-        )}
+        {avatar
+          ? <img src={avatar} alt={name} className="admin-avatar" referrerPolicy="no-referrer" />
+          : <div className="admin-avatar-placeholder"><User size={14} /></div>}
         <span className="admin-user-name" title={name}>{name}</span>
       </div>
       <RoleBadge role={role} />
@@ -34,7 +32,6 @@ function UserChip({ user, role }) {
   )
 }
 
-// Componente que protege rutas por permiso
 export function RequirePermission({ permission, children }) {
   const { userCan } = useAuth()
   if (!userCan(permission)) {
@@ -49,12 +46,47 @@ export function RequirePermission({ permission, children }) {
   return children
 }
 
+// Pantalla cuando el usuario existe pero no tiene rol asignado
+function NoRoleScreen({ user, signOut }) {
+  const email = user?.email || ''
+  return (
+    <div className="no-role-screen">
+      <AlertTriangle size={48} color="#f59e0b" />
+      <h2>Sin permisos de acceso</h2>
+      <p>
+        Tu cuenta <strong>{email}</strong> no tiene ningún rol asignado en este panel.
+      </p>
+      <p className="no-role-hint">
+        Pide a un superadmin que te asigne un rol desde{' '}
+        <code>/admin/usuarios</code>, o ejecuta en Supabase SQL Editor:
+      </p>
+      <pre className="no-role-sql">{`INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'superadmin'
+FROM auth.users
+WHERE email = '${email}'
+ON CONFLICT (user_id) DO UPDATE SET role = 'superadmin';`}</pre>
+      <button className="no-role-signout" onClick={signOut}>
+        <LogOut size={16} /> Cerrar sesión
+      </button>
+    </div>
+  )
+}
+
 export default function AdminLayout() {
   const { user, role, loading, signOut, hasAdminAccess, hasSupabase } = useAuth()
   const [open, setOpen] = useState(false)
 
-  if (loading) return <div className="admin-loading"><span className="spinner dark" /></div>
-  if (!user || !hasAdminAccess) return <Login />
+  if (loading) return (
+    <div className="admin-loading">
+      <span className="spinner dark" />
+    </div>
+  )
+
+  // No autenticado → Login
+  if (!user) return <Login />
+
+  // Autenticado pero sin rol → pantalla de ayuda (no bucle)
+  if (!role) return <NoRoleScreen user={user} signOut={signOut} />
 
   const navItems = navForRole(role)
 
@@ -67,13 +99,9 @@ export default function AdminLayout() {
         </div>
         <nav className="admin-nav">
           {navItems.map(n => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.end}
+            <NavLink key={n.to} to={n.to} end={n.end}
               className={({ isActive }) => `admin-navitem ${isActive ? 'active' : ''}`}
-              onClick={() => setOpen(false)}
-            >
+              onClick={() => setOpen(false)}>
               <n.icon size={18} />{n.label}
             </NavLink>
           ))}
@@ -88,6 +116,7 @@ export default function AdminLayout() {
           </Link>
         </div>
       </aside>
+
       <div className="admin-body">
         <header className="admin-topbar">
           <button className="topbar-burger" onClick={() => setOpen(true)}><Menu size={20} /></button>
