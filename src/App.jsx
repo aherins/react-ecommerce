@@ -10,13 +10,14 @@ import WishlistPage from './pages/WishlistPage'
 import ContactPage from './pages/ContactPage'
 import TrackingPage from './pages/TrackingPage'
 import AuthPage from './pages/AuthPage'
-import AdminLayout from './pages/admin/AdminLayout'
+import AdminLayout, { RequirePermission } from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminProducts from './pages/admin/AdminProducts'
 import AdminCategories from './pages/admin/AdminCategories'
 import AdminOrders from './pages/admin/AdminOrders'
 import AdminStats from './pages/admin/AdminStats'
 import AdminShipping from './pages/admin/AdminShipping'
+import AdminUsers from './pages/admin/AdminUsers'
 
 export default function App() {
   return (
@@ -24,23 +25,75 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/"            element={<StoreFront />} />
-            <Route path="/producto/:id" element={<ProductDetail />} />
-            <Route path="/carrito"     element={<CartPage />} />
-            <Route path="/checkout"    element={<CheckoutPage />} />
-            <Route path="/deseos"      element={<WishlistPage />} />
-            <Route path="/contacto"    element={<ContactPage />} />
-            <Route path="/seguimiento" element={<TrackingPage />} />
+            {/* Tienda pública */}
+            <Route path="/"                   element={<StoreFront />} />
+            <Route path="/producto/:id"       element={<ProductDetail />} />
+            <Route path="/carrito"            element={<CartPage />} />
+            <Route path="/checkout"           element={<CheckoutPage />} />
+            <Route path="/deseos"             element={<WishlistPage />} />
+            <Route path="/contacto"           element={<ContactPage />} />
+            <Route path="/seguimiento"        element={<TrackingPage />} />
             <Route path="/seguimiento/:orderId" element={<TrackingPage />} />
-            <Route path="/cuenta"      element={<AuthPage />} />
+            <Route path="/cuenta"             element={<AuthPage />} />
 
+            {/* Panel admin — cada sección protegida por permiso */}
             <Route path="/admin" element={<AdminLayout />}>
-              <Route index                  element={<AdminDashboard />} />
-              <Route path="pedidos"         element={<AdminOrders />} />
-              <Route path="productos"       element={<AdminProducts />} />
-              <Route path="categorias"      element={<AdminCategories />} />
-              <Route path="estadisticas"    element={<AdminStats />} />
-              <Route path="envios"          element={<AdminShipping />} />
+              <Route
+                index
+                element={
+                  <RequirePermission permission="dashboard">
+                    <AdminDashboard />
+                  </RequirePermission>
+                }
+              />
+              <Route
+                path="pedidos"
+                element={
+                  <RequirePermission permission="pedidos.ver">
+                    <AdminOrders />
+                  </RequirePermission>
+                }
+              />
+              <Route
+                path="productos"
+                element={
+                  <RequirePermission permission="productos">
+                    <AdminProducts />
+                  </RequirePermission>
+                }
+              />
+              <Route
+                path="categorias"
+                element={
+                  <RequirePermission permission="categorias">
+                    <AdminCategories />
+                  </RequirePermission>
+                }
+              />
+              <Route
+                path="estadisticas"
+                element={
+                  <RequirePermission permission="estadisticas.ver">
+                    <AdminStats />
+                  </RequirePermission>
+                }
+              />
+              <Route
+                path="envios"
+                element={
+                  <RequirePermission permission="envios">
+                    <AdminShipping />
+                  </RequirePermission>
+                }
+              />
+              <Route
+                path="usuarios"
+                element={
+                  <RequirePermission permission="usuarios.ver">
+                    <AdminUsers />
+                  </RequirePermission>
+                }
+              />
             </Route>
           </Routes>
         </BrowserRouter>
