@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const initialized = useRef(false)
 
-  // ── Resolver rol desde Supabase ─────────────────────────────────
+  // ── Resolver rol — FUERA del callback de auth para evitar deadlock ──
   async function resolveRole(authUser) {
     if (!authUser) { setRole(null); return }
     if (!hasSupabase) { setRole(authUser._demoRole || null); return }
@@ -22,15 +22,12 @@ export function AuthProvider({ children }) {
         .eq('user_id', authUser.id)
         .maybeSingle()
 
-      // Si no tiene fila en user_roles → rol null (sin acceso admin)
-      // Si hay error de RLS u otro → también null, no bloqueamos loading
       setRole((!error && data?.role) || null)
     } catch {
       setRole(null)
     }
   }
 
-  // ── Sesión inicial ──────────────────────────────────────────────
   useEffect(() => {
     if (!hasSupabase) {
       const raw = sessionStorage.getItem('demo_session')
@@ -44,29 +41,30 @@ export function AuthProvider({ children }) {
       return
     }
 
-    // onAuthStateChange dispara SIEMPRE al montar (incluso con sesión existente)
-    // Es más fiable que getSession para el primer load
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         const u = session?.user ?? null
         setUser(u)
-        await resolveRole(u)
 
-        // Solo desactivar loading la primera vez
-        if (!initialized.current) {
-          initialized.current = true
-          setLoading(false)
-        }
+        // ← clave: setTimeout(0) libera el hilo de auth antes de hacer
+        //   otra query a Supabase, evitando el deadlock del cliente
+        setTimeout(async () => {
+          await resolveRole(u)
+          if (!initialized.current) {
+            initialized.current = true
+            setLoading(false)
+          }
+        }, 0)
       }
     )
 
-    // Timeout de seguridad: si en 5s no responde, quitar el spinner
+    // Red de seguridad: si en 8s no hubo ningún evento, salir del spinner
     const timeout = setTimeout(() => {
       if (!initialized.current) {
         initialized.current = true
         setLoading(false)
       }
-    }, 5000)
+    }, 8000)
 
     return () => {
       subscription.unsubscribe()
@@ -74,7 +72,6 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // ── Email + contraseña ──────────────────────────────────────────
   async function signIn(email, password) {
     if (!hasSupabase) {
       const found = DEMO_USERS.find(u => u.email === email && u.password === password)
@@ -93,13 +90,11 @@ export function AuthProvider({ children }) {
     return result
   }
 
-  // ── Registro ────────────────────────────────────────────────────
   async function signUp(email, password, metadata = {}) {
     if (!hasSupabase) return { error: { message: 'Registro no disponible en modo demo' } }
     return supabase.auth.signUp({ email, password, options: { data: metadata } })
   }
 
-  // ── Google OAuth ────────────────────────────────────────────────
   async function signInWithGoogle() {
     if (!hasSupabase) {
       const u = {
@@ -117,7 +112,6 @@ export function AuthProvider({ children }) {
     })
   }
 
-  // ── Cerrar sesión ───────────────────────────────────────────────
   async function signOut() {
     if (!hasSupabase) {
       sessionStorage.removeItem('demo_session')
@@ -129,14 +123,13 @@ export function AuthProvider({ children }) {
 
   function userCan(permission) { return can(role, permission) }
 
-  // hasAdminAccess: tiene sesión (el panel mostrará Login si no hay rol)
-  const hasAdminAccess = Boolean(user)
-
   return (
     <AuthContext.Provider value={{
       user, role, loading,
       signIn, signUp, signInWithGoogle, signOut,
-      userCan, hasAdminAccess, hasSupabase,
+      userCan,
+      hasAdminAccess: Boolean(user),
+      hasSupabase,
     }}>
       {children}
     </AuthContext.Provider>
