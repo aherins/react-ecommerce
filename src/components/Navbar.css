@@ -110,3 +110,28 @@
 
   .navbar-nav.open { display: flex; }
 }
+
+.navbar-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: var(--ink);
+  transition: opacity var(--transition);
+}
+.navbar-icon-btn:hover { opacity: 0.6; }
+
+.icon-badge {
+  position: absolute;
+  top: -6px; right: -8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px; font-weight: 700;
+  min-width: 18px; height: 18px;
+  border-radius: 99px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px;
+}
+.wish-badge { background: #e44d8a; }
+
+.navbar-admin { color: var(--muted); }
+.navbar-admin:hover { color: var(--ink); opacity: 1; }
