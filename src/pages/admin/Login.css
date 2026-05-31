@@ -31,7 +31,7 @@
   font-size: 14px;
   font-weight: 400;
   color: var(--muted);
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 /* Demo banner */
@@ -48,6 +48,7 @@
   margin-bottom: 20px;
   line-height: 1.4;
 }
+
 .login-demo-banner button {
   text-decoration: underline;
   color: #92400e;
@@ -104,8 +105,18 @@
   gap: 16px;
 }
 
-.form-row { display: flex; flex-direction: column; gap: 6px; }
-.form-row label { font-size: 13px; font-weight: 500; color: var(--ink); }
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
 .form-row input {
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -114,7 +125,10 @@
   background: var(--paper);
   transition: border-color var(--transition);
 }
-.form-row input:focus { border-color: var(--ink); }
+
+.form-row input:focus {
+  border-color: var(--ink);
+}
 
 .login-error {
   font-size: 13px;
@@ -138,16 +152,16 @@
   font-weight: 500;
   font-family: var(--font-body);
   margin-top: 4px;
-  border: none;
-  cursor: pointer;
   transition: background var(--transition);
 }
+
 .login-btn:hover:not(:disabled) { background: var(--accent); }
 .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* Spinners */
 .spinner {
-  width: 16px; height: 16px;
+  width: 16px;
+  height: 16px;
   border: 2px solid rgba(255,255,255,0.3);
   border-top-color: #fff;
   border-radius: 50%;
