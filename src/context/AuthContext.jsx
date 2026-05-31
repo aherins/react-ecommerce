@@ -21,12 +21,15 @@ export function AuthProvider({ children }) {
       setUser(data.session?.user ?? null)
       setLoading(false)
     })
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user ?? null)
     })
+
     return () => subscription.unsubscribe()
   }, [])
 
+  // ── Email + contraseña ──────────────────────────────────────────────────────
   async function signIn(email, password) {
     if (!hasSupabase) {
       if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
@@ -39,12 +42,11 @@ export function AuthProvider({ children }) {
     }
     return supabase.auth.signInWithPassword({ email, password })
   }
-
   async function signUp(email, password, metadata = {}) {
     if (!hasSupabase) return { error: { message: 'Registro no disponible en modo demo' } }
     return supabase.auth.signUp({ email, password, options: { data: metadata } })
   }
-
+  // ── Google OAuth ────────────────────────────────────────────────────────────
   async function signInWithGoogle() {
     if (!hasSupabase) {
       const u = { id: 'demo-google', email: 'demo@google.com',
@@ -56,7 +58,10 @@ export function AuthProvider({ children }) {
     }
     return supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/admin` },
+      options: {
+        redirectTo: `${window.location.origin}/admin`,
+        queryParams: { access_type: 'offline', prompt: 'consent' },
+      },
     })
   }
 
@@ -65,8 +70,12 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
+  const provider = user?.app_metadata?.provider
+    ?? user?.app_metadata?.providers?.[0]
+    ?? 'email'
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signInWithGoogle, signOut, isAdmin: Boolean(user), hasSupabase }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signInWithGoogle, signOut, isAdmin: Boolean(user), provider }}>
       {children}
     </AuthContext.Provider>
   )
