@@ -240,13 +240,27 @@ function RealStripeForm({ items, cartTotal, onSuccess }) {
 
 // ─── PAGE ─────────────────────────────────────────────────────────────────────
 export default function CheckoutPage() {
-  const { cart, products, cartTotal } = useStore()
+  const { cart, products, cartTotal, dispatch } = useStore()
   const navigate = useNavigate()
   const [result, setResult] = useState(null)
 
   const items = cart
     .map(i => ({ ...i, product: products.find(p => p.id === i.productId) }))
     .filter(i => i.product)
+
+  function handleSuccess(payment) {
+    const order = {
+      id: payment.id,
+      paymentId: payment.id,
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+      total: cartTotal,
+      items: cart.map(i => ({ productId: i.productId, qty: i.qty })),
+      simulated: payment.simulated,
+    }
+    dispatch({ type: 'ADD_ORDER', order })
+    setResult(payment)
+  }
 
   if (result) return (
     <div>
@@ -281,10 +295,10 @@ export default function CheckoutPage() {
 
           {hasStripe ? (
             <Elements stripe={stripePromise}>
-              <RealStripeForm items={items} cartTotal={cartTotal} onSuccess={setResult} />
+              <RealStripeForm items={items} cartTotal={cartTotal} onSuccess={handleSuccess} />
             </Elements>
           ) : (
-            <SimulationForm items={items} cartTotal={cartTotal} onSuccess={setResult} />
+            <SimulationForm items={items} cartTotal={cartTotal} onSuccess={handleSuccess} />
           )}
         </div>
       </main>

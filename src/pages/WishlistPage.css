@@ -1,0 +1,51 @@
+.wishlist-main { max-width: 1280px; margin: 0 auto; padding: 40px 24px 80px; }
+.wishlist-inner { animation: fadeUp 0.4s ease both; }
+
+.page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+.page-header h1 { font-family: var(--font-display); font-size: 32px; font-weight: 800; }
+
+.wishlist-empty { text-align: center; padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.wishlist-empty p { color: var(--muted); }
+
+.wishlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+
+.wishlist-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  transition: box-shadow var(--transition);
+}
+.wishlist-card:hover { box-shadow: var(--shadow-lg); }
+
+.wishlist-img { display: block; aspect-ratio: 1; overflow: hidden; background: var(--cream); }
+.wishlist-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+.wishlist-card:hover .wishlist-img img { transform: scale(1.04); }
+
+.wishlist-info { padding: 12px 16px 0; }
+.wish-name { font-size: 15px; font-weight: 500; color: var(--ink); transition: color var(--transition); }
+.wish-name:hover { color: var(--accent); }
+.wish-price { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+.wishlist-actions { display: flex; gap: 8px; padding: 12px 16px 16px; }
+.wish-add-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: var(--ink); color: var(--paper); padding: 8px 12px;
+  border-radius: 99px; font-size: 13px; font-weight: 500; font-family: var(--font-body);
+  transition: background var(--transition);
+}
+.wish-add-btn:hover:not(:disabled) { background: var(--accent); }
+.wish-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.wish-remove-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); color: var(--muted);
+  transition: all var(--transition);
+}
+.wish-remove-btn:hover { border-color: var(--danger); color: var(--danger); background: #fee2e2; }
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--ink); color: var(--paper); padding: 12px 28px;
+  border-radius: 99px; font-size: 14px; font-weight: 500;
+  font-family: var(--font-body); transition: background var(--transition);
+}
+.btn-primary:hover { background: var(--accent); }
