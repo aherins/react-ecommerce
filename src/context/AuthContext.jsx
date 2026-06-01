@@ -15,15 +15,21 @@ export function AuthProvider({ children }) {
     if (!authUser) { setRole(null); return }
     if (!hasSupabase) { setRole(authUser._demoRole || null); return }
 
+    console.log('resolveRole', authUser.id, authUser.email, 'hasSupabase', hasSupabase)
+
     try {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', authUser.id)
         .maybeSingle()
+        
+        console.log('user_roles query', { data, error })
+
 
       setRole((!error && data?.role) || null)
     } catch {
+      console.error('resolveRole catch', err)
       setRole(null)
     }
   }
