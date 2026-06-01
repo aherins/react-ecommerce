@@ -115,12 +115,40 @@ export function StoreProvider({ children }) {
     dispatch(action)
     if (!hasSupabase) return
     switch (action.type) {
-      case 'PRODUCT_ADD': { const {id,...r}=action.product; await supabase.from('products').insert({...r,id}); break }
-      case 'PRODUCT_UPDATE': { const {id,...r}=action.product; await supabase.from('products').update(r).eq('id',id); break }
-      case 'PRODUCT_DELETE': await supabase.from('products').delete().eq('id',action.id); break
-      case 'CATEGORY_ADD': { const {id,...r}=action.category; await supabase.from('categories').insert({...r,id}); break }
-      case 'CATEGORY_UPDATE': { const {id,...r}=action.category; await supabase.from('categories').update(r).eq('id',id); break }
-      case 'CATEGORY_DELETE': await supabase.from('categories').delete().eq('id',action.id); break
+      case 'PRODUCT_ADD': {
+        const { id, ...r } = action.product
+        const res = await supabase.from('products').insert({ ...r, id })
+        console.log('PRODUCT_ADD result', res)
+        break
+      }
+      case 'PRODUCT_UPDATE': {
+        const { id, ...r } = action.product
+        const res = await supabase.from('products').update(r).eq('id', id)
+        console.log('PRODUCT_UPDATE result', res)
+        break
+      }
+      case 'PRODUCT_DELETE': {
+        const res = await supabase.from('products').delete().eq('id', action.id)
+        console.log('PRODUCT_DELETE result', res)
+        break
+      }
+      case 'CATEGORY_ADD': {
+        const { id, ...r } = action.category
+        const res = await supabase.from('categories').insert({ ...r, id })
+        console.log('CATEGORY_ADD result', res)
+        break
+      }
+      case 'CATEGORY_UPDATE': {
+        const { id, ...r } = action.category
+        const res = await supabase.from('categories').update(r).eq('id', id)
+        console.log('CATEGORY_UPDATE result', res)
+        break
+      }
+      case 'CATEGORY_DELETE': {
+        const res = await supabase.from('categories').delete().eq('id', action.id)
+        console.log('CATEGORY_DELETE result', res)
+        break
+      }
     }
   }, [])
 
