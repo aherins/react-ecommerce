@@ -118,13 +118,20 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     if (!hasSupabase) return
     const ch = supabase.channel('shop-rt')
+      // Escuchar cambios en productos para mantener la app sincronizada en tiempo real
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
         supabase.from('products').select('*').order('created_at')
           .then(({ data }) => data && dispatch({ type: 'SET_PRODUCTS', products: data }))
       })
+      // Escuchar cambios en categorías para mantener la app sincronizada en tiempo real
       .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
         supabase.from('categories').select('*').order('created_at')
           .then(({ data }) => data && dispatch({ type: 'SET_CATEGORIES', categories: data }))
+      })
+      // Escuchar cambios en cupones para mantener la app sincronizada en tiempo real
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'coupons' }, () => {
+        supabase.from('coupons').select('*').order('created_at')
+          .then(({ data }) => data && dispatch({ type: 'SET_COUPONS', coupons: data }))
       })
       .subscribe()
     return () => supabase.removeChannel(ch)
@@ -142,6 +149,9 @@ export function StoreProvider({ children }) {
       case 'CATEGORY_ADD': { const {id,...r}=action.category; await supabase.from('categories').insert({...r,id}); break }
       case 'CATEGORY_UPDATE': { const {id,...r}=action.category; await supabase.from('categories').update(r).eq('id',id); break }
       case 'CATEGORY_DELETE': await supabase.from('categories').delete().eq('id',action.id); break
+      case 'COUPON_ADD': { const {id,...r}=action.coupon; await supabase.from('coupons').insert({...r,id}); break }
+      case 'COUPON_UPDATE': { const {id,...r}=action.coupon; await supabase.from('coupons').update(r).eq('id',id); break }
+      case 'COUPON_DELETE': await supabase.from('coupons').delete().eq('id',action.id); break
     }
   }, [])
 
