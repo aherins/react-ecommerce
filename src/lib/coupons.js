@@ -122,7 +122,7 @@ export const SEED_COUPONS = [
 // ── Generador de código aleatorio ─────────────────────────────────────────────
 export function generateCode(prefix = '') {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // sin O,0,1,I para evitar confusión
-  const rand  = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+  const rand  = Array.from({ length: 16 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
   return prefix ? `${prefix.toUpperCase()}-${rand}` : rand
 }
 

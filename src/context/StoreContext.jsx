@@ -96,10 +96,12 @@ export function StoreProvider({ children }) {
     Promise.all([
       supabase.from('products').select('*').order('created_at'),
       supabase.from('categories').select('*').order('created_at'),
-    ]).then(([{ data: products, error: ep }, { data: categories, error: ec }]) => {
+      supabase.from('coupons').select('*').order('created_at'),
+    ]).then(([{ data: products, error: ep }, { data: categories, error: ec }, { data: coupons, error: ec }]) => {
       if (ep || ec) { setDbError((ep || ec).message); setLoading(false); return }
       if (products?.length)   dispatch({ type: 'SET_PRODUCTS', products })
       if (categories?.length) dispatch({ type: 'SET_CATEGORIES', categories })
+      if (coupons?.length)    dispatch({ type: 'SET_COUPONS', coupons })
       setLoading(false)
     }).catch(e => { setDbError(e.message); setLoading(false) })
   }, [])
