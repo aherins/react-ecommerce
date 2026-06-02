@@ -15,21 +15,15 @@ export function AuthProvider({ children }) {
     if (!authUser) { setRole(null); return }
     if (!hasSupabase) { setRole(authUser._demoRole || null); return }
 
-    console.log('resolveRole', authUser.id, authUser.email, 'hasSupabase', hasSupabase)
-
     try {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', authUser.id)
         .maybeSingle()
-        
-        console.log('user_roles query', { data, error })
-
 
       setRole((!error && data?.role) || null)
     } catch {
-      console.error('resolveRole catch', err)
       setRole(null)
     }
   }
@@ -142,4 +136,18 @@ export function AuthProvider({ children }) {
   )
 }
 
-export const useAuth = () => useContext(AuthContext)
+export function useAuth() {
+  const ctx = useContext(AuthContext)
+  // Seguro para usar fuera del AuthProvider (rutas públicas)
+  if (!ctx) return {
+    user: null, role: null, loading: false,
+    signIn: async () => ({ error: null }),
+    signUp: async () => ({ error: null }),
+    signInWithGoogle: async () => ({ error: null }),
+    signOut: async () => {},
+    userCan: () => false,
+    hasAdminAccess: false,
+    hasSupabase: false,
+  }
+  return ctx
+}

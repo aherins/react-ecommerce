@@ -22,82 +22,54 @@ import AdminUsers from './pages/admin/AdminUsers'
 export default function App() {
   return (
     <StoreProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Tienda pública */}
-            <Route path="/"                   element={<StoreFront />} />
-            <Route path="/producto/:id"       element={<ProductDetail />} />
-            <Route path="/carrito"            element={<CartPage />} />
-            <Route path="/checkout"           element={<CheckoutPage />} />
-            <Route path="/deseos"             element={<WishlistPage />} />
-            <Route path="/contacto"           element={<ContactPage />} />
-            <Route path="/seguimiento"        element={<TrackingPage />} />
-            <Route path="/seguimiento/:orderId" element={<TrackingPage />} />
-            <Route path="/cuenta"             element={<AuthPage />} />
+      <BrowserRouter>
+        <Routes>
+          {/* ── Rutas públicas — NO necesitan AuthProvider ───────── */}
+          <Route path="/"                     element={<StoreFront />} />
+          <Route path="/producto/:id"         element={<ProductDetail />} />
+          <Route path="/carrito"              element={<CartPage />} />
+          <Route path="/checkout"             element={<CheckoutPage />} />
+          <Route path="/deseos"               element={<WishlistPage />} />
+          <Route path="/contacto"             element={<ContactPage />} />
+          <Route path="/seguimiento"          element={<TrackingPage />} />
+          <Route path="/seguimiento/:orderId" element={<TrackingPage />} />
 
-            {/* Panel admin — cada sección protegida por permiso */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route
-                index
-                element={
-                  <RequirePermission permission="dashboard">
-                    <AdminDashboard />
-                  </RequirePermission>
-                }
-              />
-              <Route
-                path="pedidos"
-                element={
-                  <RequirePermission permission="pedidos.ver">
-                    <AdminOrders />
-                  </RequirePermission>
-                }
-              />
-              <Route
-                path="productos"
-                element={
-                  <RequirePermission permission="productos">
-                    <AdminProducts />
-                  </RequirePermission>
-                }
-              />
-              <Route
-                path="categorias"
-                element={
-                  <RequirePermission permission="categorias">
-                    <AdminCategories />
-                  </RequirePermission>
-                }
-              />
-              <Route
-                path="estadisticas"
-                element={
-                  <RequirePermission permission="estadisticas.ver">
-                    <AdminStats />
-                  </RequirePermission>
-                }
-              />
-              <Route
-                path="envios"
-                element={
-                  <RequirePermission permission="envios">
-                    <AdminShipping />
-                  </RequirePermission>
-                }
-              />
-              <Route
-                path="usuarios"
-                element={
-                  <RequirePermission permission="usuarios.ver">
-                    <AdminUsers />
-                  </RequirePermission>
-                }
-              />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+          {/* ── /cuenta y /admin — necesitan AuthProvider ────────── */}
+          <Route path="/cuenta" element={
+            <AuthProvider><AuthPage /></AuthProvider>
+          }/>
+
+          <Route path="/admin/*" element={
+            <AuthProvider>
+              <Routes>
+                <Route element={<AdminLayout />}>
+                  <Route index element={
+                    <RequirePermission permission="dashboard"><AdminDashboard /></RequirePermission>
+                  }/>
+                  <Route path="pedidos" element={
+                    <RequirePermission permission="pedidos.ver"><AdminOrders /></RequirePermission>
+                  }/>
+                  <Route path="productos" element={
+                    <RequirePermission permission="productos"><AdminProducts /></RequirePermission>
+                  }/>
+                  <Route path="categorias" element={
+                    <RequirePermission permission="categorias"><AdminCategories /></RequirePermission>
+                  }/>
+                  <Route path="estadisticas" element={
+                    <RequirePermission permission="estadisticas.ver"><AdminStats /></RequirePermission>
+                  }/>
+                  <Route path="envios" element={
+                    <RequirePermission permission="envios"><AdminShipping /></RequirePermission>
+                  }/>
+                  <Route path="usuarios" element={
+                    <RequirePermission permission="usuarios.ver"><AdminUsers /></RequirePermission>
+                  }/>
+                </Route>
+              </Routes>
+            </AuthProvider>
+          }/>
+        </Routes>
+      </BrowserRouter>
     </StoreProvider>
   )
 }
