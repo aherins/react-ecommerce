@@ -97,8 +97,8 @@ export function StoreProvider({ children }) {
       supabase.from('products').select('*').order('created_at'),
       supabase.from('categories').select('*').order('created_at'),
       supabase.from('coupons').select('*').order('created_at'),
-    ]).then(([{ data: products, error: ep }, { data: categories, error: ec }, { data: coupons, error: ec }]) => {
-      if (ep || ec) { setDbError((ep || ec).message); setLoading(false); return }
+    ]).then(([{ data: products, error: epro }, { data: categories, error: ecat }, { data: coupons, error: ecou }]) => {
+      if (epro || ecat || ecou) { setDbError((epro || ecat || ecou).message); setLoading(false); return }
       if (products?.length)   dispatch({ type: 'SET_PRODUCTS', products })
       if (categories?.length) dispatch({ type: 'SET_CATEGORIES', categories })
       if (coupons?.length)    dispatch({ type: 'SET_COUPONS', coupons })
