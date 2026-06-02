@@ -18,58 +18,57 @@ import AdminOrders from './pages/admin/AdminOrders'
 import AdminStats from './pages/admin/AdminStats'
 import AdminShipping from './pages/admin/AdminShipping'
 import AdminUsers from './pages/admin/AdminUsers'
+import AdminCoupons from './pages/admin/AdminCoupons'
 
+// AuthProvider envuelve TODA la app pero el loading ya no bloquea
+// rutas públicas gracias al fix en AuthContext (loading solo afecta a AdminLayout)
 export default function App() {
   return (
     <StoreProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* ── Rutas públicas — NO necesitan AuthProvider ───────── */}
-          <Route path="/"                     element={<StoreFront />} />
-          <Route path="/producto/:id"         element={<ProductDetail />} />
-          <Route path="/carrito"              element={<CartPage />} />
-          <Route path="/checkout"             element={<CheckoutPage />} />
-          <Route path="/deseos"               element={<WishlistPage />} />
-          <Route path="/contacto"             element={<ContactPage />} />
-          <Route path="/seguimiento"          element={<TrackingPage />} />
-          <Route path="/seguimiento/:orderId" element={<TrackingPage />} />
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* ── Tienda pública ─────────────────────────────────── */}
+            <Route path="/"                     element={<StoreFront />} />
+            <Route path="/producto/:id"         element={<ProductDetail />} />
+            <Route path="/carrito"              element={<CartPage />} />
+            <Route path="/checkout"             element={<CheckoutPage />} />
+            <Route path="/deseos"               element={<WishlistPage />} />
+            <Route path="/contacto"             element={<ContactPage />} />
+            <Route path="/seguimiento"          element={<TrackingPage />} />
+            <Route path="/seguimiento/:orderId" element={<TrackingPage />} />
+            <Route path="/cuenta"               element={<AuthPage />} />
 
-          {/* ── /cuenta y /admin — necesitan AuthProvider ────────── */}
-          <Route path="/cuenta" element={
-            <AuthProvider><AuthPage /></AuthProvider>
-          }/>
-
-          <Route path="/admin/*" element={
-            <AuthProvider>
-              <Routes>
-                <Route element={<AdminLayout />}>
-                  <Route index element={
-                    <RequirePermission permission="dashboard"><AdminDashboard /></RequirePermission>
-                  }/>
-                  <Route path="pedidos" element={
-                    <RequirePermission permission="pedidos.ver"><AdminOrders /></RequirePermission>
-                  }/>
-                  <Route path="productos" element={
-                    <RequirePermission permission="productos"><AdminProducts /></RequirePermission>
-                  }/>
-                  <Route path="categorias" element={
-                    <RequirePermission permission="categorias"><AdminCategories /></RequirePermission>
-                  }/>
-                  <Route path="estadisticas" element={
-                    <RequirePermission permission="estadisticas.ver"><AdminStats /></RequirePermission>
-                  }/>
-                  <Route path="envios" element={
-                    <RequirePermission permission="envios"><AdminShipping /></RequirePermission>
-                  }/>
-                  <Route path="usuarios" element={
-                    <RequirePermission permission="usuarios.ver"><AdminUsers /></RequirePermission>
-                  }/>
-                </Route>
-              </Routes>
-            </AuthProvider>
-          }/>
-        </Routes>
-      </BrowserRouter>
+            {/* ── Admin ─────────────────────────────────────────── */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={
+                <RequirePermission permission="dashboard"><AdminDashboard /></RequirePermission>
+              }/>
+              <Route path="pedidos" element={
+                <RequirePermission permission="pedidos.ver"><AdminOrders /></RequirePermission>
+              }/>
+              <Route path="productos" element={
+                <RequirePermission permission="productos"><AdminProducts /></RequirePermission>
+              }/>
+              <Route path="categorias" element={
+                <RequirePermission permission="categorias"><AdminCategories /></RequirePermission>
+              }/>
+              <Route path="estadisticas" element={
+                <RequirePermission permission="estadisticas.ver"><AdminStats /></RequirePermission>
+              }/>
+              <Route path="envios" element={
+                <RequirePermission permission="envios"><AdminShipping /></RequirePermission>
+              }/>
+              <Route path="usuarios" element={
+                <RequirePermission permission="usuarios.ver"><AdminUsers /></RequirePermission>
+              }/>
+              <Route path="cupones" element={
+                <RequirePermission permission="cupones"><AdminCoupons /></RequirePermission>
+              }/>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </StoreProvider>
   )
 }

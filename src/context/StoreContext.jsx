@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useState, useCallback } from 'react'
 import { supabase, hasSupabase } from '../lib/supabase'
 import { activity } from '../lib/activity'
+import { SEED_COUPONS } from '../lib/coupons'
 
 const SEED_CATEGORIES = [
   { id: 'cat-1', name: 'Cerámica', slug: 'ceramica' },
@@ -62,6 +63,11 @@ function reducer(state, action) {
     }
     case 'SET_ORDERS': return { ...state, orders: action.orders }
     case 'ADD_ORDER':  return { ...state, orders: [action.order, ...state.orders] }
+    case 'SET_COUPONS':    return { ...state, coupons: action.coupons }
+    case 'COUPON_ADD':     return { ...state, coupons: [...state.coupons, action.coupon] }
+    case 'COUPON_UPDATE':  return { ...state, coupons: state.coupons.map(c => c.id === action.coupon.id ? action.coupon : c) }
+    case 'COUPON_DELETE':  return { ...state, coupons: state.coupons.filter(c => c.id !== action.id) }
+    case 'COUPON_USE':     return { ...state, coupons: state.coupons.map(c => c.id === action.id ? { ...c, usedCount: (c.usedCount||0)+1 } : c) }
     default: return state
   }
 }
@@ -75,6 +81,7 @@ export function StoreProvider({ children }) {
     cart:       load('cart',       []),
     wishlist:   load('wishlist',   []),
     orders:     load('orders',     []),
+    coupons:    load('coupons',    SEED_COUPONS),
   }))
   const [loading, setLoading] = useState(false)
   const [dbError, setDbError] = useState(null)
@@ -103,6 +110,7 @@ export function StoreProvider({ children }) {
   useEffect(() => { localStorage.setItem('cart',     JSON.stringify(state.cart))     }, [state.cart])
   useEffect(() => { localStorage.setItem('wishlist', JSON.stringify(state.wishlist)) }, [state.wishlist])
   useEffect(() => { localStorage.setItem('orders',   JSON.stringify(state.orders))   }, [state.orders])
+  useEffect(() => { if (!hasSupabase) localStorage.setItem('coupons', JSON.stringify(state.coupons)) }, [state.coupons])
 
   // Realtime (solo si Supabase disponible)
   useEffect(() => {
@@ -146,6 +154,7 @@ export function StoreProvider({ children }) {
   return (
     <StoreContext.Provider value={{
       products:   state.products   || [],
+      coupons:    state.coupons    || [],
       categories: state.categories || [],
       cart:       state.cart       || [],
       wishlist:   state.wishlist   || [],

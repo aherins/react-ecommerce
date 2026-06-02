@@ -84,3 +84,22 @@
 @media (max-width: 768px) {
   .cart-layout { grid-template-columns: 1fr; }
 }
+
+.cart-coupon-section {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.summary-discount {
+  color: var(--success) !important;
+  font-weight: 500;
+}
+.summary-discount span:last-child { font-weight: 700; }
+
+.cart-coupon-wrap {
+  padding: 14px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.summary-row--discount { color: var(--success); font-weight: 600; }
+.summary-row--discount em { font-style: normal; font-size: 11px; font-weight: 400; color: var(--muted); }

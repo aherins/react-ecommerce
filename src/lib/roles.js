@@ -31,6 +31,7 @@ export const PERMISSIONS = {
   estadisticas: ['superadmin', 'admin'],
   envios:       ['superadmin', 'admin', 'editor'],
   usuarios:     ['superadmin'],              // solo superadmin gestiona usuarios
+  cupones:      ['superadmin', 'admin'],      // cupones: solo admin y superadmin
 
   // Acciones específicas
   'productos.crear':   ['superadmin', 'admin', 'editor'],
@@ -68,7 +69,7 @@ export function navForRole(role) {
   return NAV_ITEMS.filter(n => can(role, n.permission))
 }
 
-import { LayoutDashboard, ShoppingBag, Package, Tag, BarChart2, Truck, Users } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Package, Tag, BarChart2, Truck, Users, Ticket } from 'lucide-react'
 
 export const NAV_ITEMS = [
   { to: '/admin',              label: 'Dashboard',    icon: LayoutDashboard, permission: 'dashboard',    end: true },
@@ -78,6 +79,7 @@ export const NAV_ITEMS = [
   { to: '/admin/estadisticas', label: 'Estadísticas',  icon: BarChart2,       permission: 'estadisticas'         },
   { to: '/admin/envios',       label: 'Envíos',        icon: Truck,           permission: 'envios'               },
   { to: '/admin/usuarios',     label: 'Usuarios',      icon: Users,           permission: 'usuarios'             },
+  { to: '/admin/cupones',      label: 'Cupones',       icon: Ticket,          permission: 'cupones'              },
 ]
 
 // ─── Usuarios demo para modo sin Supabase ────────────────────────────────────

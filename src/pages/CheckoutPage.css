@@ -201,3 +201,8 @@
   .checkout-grid { grid-template-columns: 1fr; }
   .sim-extra { grid-template-columns: auto 1fr; }
 }
+.summary-coupon {
+  padding: 12px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
