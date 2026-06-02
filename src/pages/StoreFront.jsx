@@ -1,14 +1,26 @@
 import React, { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+import RecentActivity from '../components/RecentActivity'
 import ProductCard from '../components/ProductCard'
 import { useStore } from '../context/StoreContext'
+import { activity } from '../lib/activity'
 import './StoreFront.css'
 
 export default function StoreFront() {
   const { products, categories } = useStore()
   const [params, setParams] = useSearchParams()
   const [search, setSearch] = useState('')
+
+  function handleSearch(q) {
+    setSearch(q)
+    if (q.trim().length >= 2) activity.trackSearch(q.trim())
+  }
+
+  function applySearch(q) {
+    setSearch(q)
+    if (q) activity.trackSearch(q)
+  }
   const activeCat = params.get('cat') || ''
 
   const filtered = products.filter(p => {
@@ -50,7 +62,7 @@ export default function StoreFront() {
             className="search-input"
             placeholder="Buscar…"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => handleSearch(e.target.value)}
           />
         </div>
 
@@ -68,6 +80,10 @@ export default function StoreFront() {
           </div>
         )}
       </main>
+
+      <div className="shop-activity-wrap">
+        <RecentActivity variant="full" onSearch={applySearch} />
+      </div>
 
       <footer className="footer">
         <p>© {new Date().getFullYear()} Artesana · <a href="/admin">Admin</a></p>

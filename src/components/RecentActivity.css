@@ -1,0 +1,203 @@
+/* ─── Full variant (StoreFront) ─────────────────────────────────── */
+.recent-activity {
+  border-top: 1px solid var(--border);
+  padding: 40px 0 48px;
+  animation: fadeUp 0.4s ease both;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.activity-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.activity-title h2 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.activity-dismiss {
+  color: var(--muted);
+  padding: 4px;
+  border-radius: var(--radius);
+  transition: color var(--transition);
+}
+.activity-dismiss:hover { color: var(--ink); }
+
+/* Sections */
+.activity-section { margin-bottom: 28px; }
+
+.activity-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  color: var(--muted);
+}
+
+.activity-section-header h3 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Product scroll row */
+.activity-product-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.activity-product-card {
+  flex-shrink: 0;
+  width: 140px;
+  display: block;
+  transition: opacity var(--transition);
+}
+.activity-product-card:hover { opacity: 0.8; }
+
+.activity-product-img {
+  width: 140px;
+  height: 140px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--cream);
+  margin-bottom: 8px;
+}
+.activity-product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.activity-product-card:hover .activity-product-img img { transform: scale(1.04); }
+
+.activity-product-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.3;
+  margin-bottom: 2px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.activity-product-price {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Search pills */
+.activity-searches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.activity-search-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 13px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.activity-search-pill:hover {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+/* Clear button */
+.activity-clear {
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: underline;
+  font-family: var(--font-body);
+  cursor: pointer;
+  margin-top: 8px;
+  transition: color var(--transition);
+}
+.activity-clear:hover { color: var(--danger); }
+
+/* ─── Sidebar variant (ProductDetail) ──────────────────────────── */
+.activity-sidebar {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  animation: fadeIn 0.3s ease both;
+}
+
+.activity-sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.activity-sidebar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activity-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--radius);
+  transition: background var(--transition);
+}
+.activity-sidebar-item:hover { background: var(--cream); }
+
+.activity-sidebar-item img {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.asb-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.3;
+  flex: 1;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.asb-price { font-size: 12px; color: var(--muted); }
+.asb-arrow { color: var(--border); flex-shrink: 0; }
+.activity-sidebar-item:hover .asb-arrow { color: var(--muted); }

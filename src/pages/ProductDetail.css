@@ -97,3 +97,8 @@
 @media (max-width: 768px) {
   .detail-layout { grid-template-columns: 1fr; gap: 32px; }
 }
+
+/* Vistos recientemente en detalle */
+.detail-main .activity-sidebar {
+  max-width: 480px;
+}

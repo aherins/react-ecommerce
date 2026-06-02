@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShoppingBag, Package } from 'lucide-react'
 import Navbar from '../components/Navbar'
+import RecentActivity from '../components/RecentActivity'
+import { activity } from '../lib/activity'
 import { useStore } from '../context/StoreContext'
 import './ProductDetail.css'
 
@@ -19,6 +21,11 @@ export default function ProductDetail() {
   )
 
   const category = categories.find(c => c.id === product.categoryId)
+
+  // Registrar visita al producto
+  useEffect(() => {
+    if (product?.id) activity.trackView(product.id)
+  }, [product?.id])
 
   function handleAdd() {
     dispatch({ type: 'CART_ADD', productId: product.id })
@@ -60,6 +67,11 @@ export default function ProductDetail() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Vistos recientemente */}
+        <div style={{marginTop: '48px'}}>
+          <RecentActivity variant="sidebar" excludeId={product.id} />
         </div>
       </main>
     </div>
