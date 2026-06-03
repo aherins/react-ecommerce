@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useState, useCallback } from 'react'
 import { supabase, hasSupabase } from '../lib/supabase'
 import { activity } from '../lib/activity'
-import { SEED_COUPONS } from '../lib/coupons'
+//import { SEED_COUPONS } from '../lib/coupons'
 
 const SEED_CATEGORIES = [
   { id: 'cat-1', name: 'Cerámica', slug: 'ceramica' },
@@ -81,7 +81,7 @@ export function StoreProvider({ children }) {
     cart:       load('cart',       []),
     wishlist:   load('wishlist',   []),
     orders:     load('orders',     []),
-    coupons:    load('coupons',    SEED_COUPONS),
+    coupons:    load('coupons',    [].concat(hasSupabase ? [] : SEED_COUPONS)),
   }))
   const [loading, setLoading] = useState(false)
   const [dbError, setDbError] = useState(null)
@@ -107,6 +107,8 @@ export function StoreProvider({ children }) {
   }, [])
 
   // localStorage sync cuando NO hay Supabase
+  // Guardar en localStorage cada vez que cambian productos, categorías o cupones, pero solo si no hay Supabase 
+  // (para evitar conflictos con la fuente de verdad remota)
   useEffect(() => { if (!hasSupabase) localStorage.setItem('products',   JSON.stringify(state.products))   }, [state.products])
   useEffect(() => { if (!hasSupabase) localStorage.setItem('categories', JSON.stringify(state.categories)) }, [state.categories])
   useEffect(() => { localStorage.setItem('cart',     JSON.stringify(state.cart))     }, [state.cart])
@@ -115,6 +117,8 @@ export function StoreProvider({ children }) {
   useEffect(() => { if (!hasSupabase) localStorage.setItem('coupons', JSON.stringify(state.coupons)) }, [state.coupons])
 
   // Realtime (solo si Supabase disponible)
+  // Suscribirse a cambios en las tablas de productos, categorías y cupones para mantener 
+  // la app sincronizada en tiempo real entre diferentes clientes
   useEffect(() => {
     if (!hasSupabase) return
     const ch = supabase.channel('shop-rt')
@@ -137,6 +141,7 @@ export function StoreProvider({ children }) {
     return () => supabase.removeChannel(ch)
   }, [])
 
+  // Smart dispatch que además de actualizar el state local, hace persistencia en Supabase y tracking de actividad
   const smartDispatch = useCallback(async (action) => {
     dispatch(action)
     // Tracking de actividad
