@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useState, useCallback } from 'react'
 import { supabase, hasSupabase } from '../lib/supabase'
 import { activity } from '../lib/activity'
-//import { SEED_COUPONS } from '../lib/coupons'
+import { SEED_COUPONS } from '../lib/coupons'
 
 const SEED_CATEGORIES = [
   { id: 'cat-1', name: 'Cerámica', slug: 'ceramica' },
@@ -72,6 +72,47 @@ function reducer(state, action) {
   }
 }
 
+
+// ─── Mapeo camelCase ↔ snake_case (frontend ↔ Supabase) ──────────────────────
+function clientToDb(c) {
+  return {
+    id:             c.id,
+    code:           c.code,
+    description:    c.description || null,
+    scope:          c.scope,
+    specific_email: c.specificEmail || null,
+    discount_type:  c.discountType,
+    discount_value: c.discountValue,
+    min_amount:     c.minAmount  || 0,
+    min_items:      c.minItems   || 0,
+    max_uses:       c.maxUses    ?? null,
+    used_count:     c.usedCount  || 0,
+    active:         c.active,
+    expires_at:     c.expiresAt  || null,
+    created_at:     c.createdAt  || new Date().toISOString(),
+  }
+}
+
+function dbToClient(r) {
+  return {
+    id:            r.id,
+    code:          r.code,
+    description:   r.description || '',
+    scope:         r.scope,
+    specificEmail: r.specific_email || null,
+    discountType:  r.discount_type,
+    discountValue: r.discount_value,
+    minAmount:     r.min_amount  || 0,
+    minItems:      r.min_items   || 0,
+    maxUses:       r.max_uses    ?? null,
+    usedCount:     r.used_count  || 0,
+    usedBy:        [],
+    active:        r.active,
+    expiresAt:     r.expires_at  || null,
+    createdAt:     r.created_at,
+  }
+}
+
 const StoreContext = createContext(null)
 
 export function StoreProvider({ children }) {
@@ -81,7 +122,7 @@ export function StoreProvider({ children }) {
     cart:       load('cart',       []),
     wishlist:   load('wishlist',   []),
     orders:     load('orders',     []),
-    coupons:    load('coupons',    [].concat(hasSupabase ? [] : SEED_COUPONS)),
+    coupons:    load('coupons',    SEED_COUPONS),
   }))
   const [loading, setLoading] = useState(false)
   const [dbError, setDbError] = useState(null)
@@ -97,11 +138,11 @@ export function StoreProvider({ children }) {
       supabase.from('products').select('*').order('created_at'),
       supabase.from('categories').select('*').order('created_at'),
       supabase.from('coupons').select('*').order('created_at'),
-    ]).then(([{ data: products, error: epro }, { data: categories, error: ecat }, { data: coupons, error: ecou }]) => {
-      if (epro || ecat || ecou) { setDbError((epro || ecat || ecou).message); setLoading(false); return }
+    ]).then(([{ data: products, error: ep }, { data: categories, error: ec }, { data: couponsRaw, error: ecp }]) => {
+      if (ep || ec) { setDbError((ep || ec).message); setLoading(false); return }
       if (products?.length)   dispatch({ type: 'SET_PRODUCTS', products })
       if (categories?.length) dispatch({ type: 'SET_CATEGORIES', categories })
-      if (coupons?.length)    dispatch({ type: 'SET_COUPONS', coupons })
+      if (couponsRaw?.length) dispatch({ type: 'SET_COUPONS', coupons: couponsRaw.map(dbToClient) })
       setLoading(false)
     }).catch(e => { setDbError(e.message); setLoading(false) })
   }, [])
@@ -154,9 +195,37 @@ export function StoreProvider({ children }) {
       case 'CATEGORY_ADD': { const {id,...r}=action.category; await supabase.from('categories').insert({...r,id}); break }
       case 'CATEGORY_UPDATE': { const {id,...r}=action.category; await supabase.from('categories').update(r).eq('id',id); break }
       case 'CATEGORY_DELETE': await supabase.from('categories').delete().eq('id',action.id); break
-      case 'COUPON_ADD': { const {id,...r}=action.coupon; await supabase.from('coupons').insert({...r,id}); break }
-      case 'COUPON_UPDATE': { const {id,...r}=action.coupon; await supabase.from('coupons').update(r).eq('id',id); break }
-      case 'COUPON_DELETE': await supabase.from('coupons').delete().eq('id',action.id); break
+      // Cupones — mapeamos camelCase → snake_case para Supabase
+      case 'COUPON_ADD': {
+        const row = clientToDb(action.coupon)
+        const { error } = await supabase.from('coupons').insert(row)
+        if (error) console.error('COUPON_ADD', error)
+        break
+      }
+      case 'COUPON_UPDATE': {
+        const { id, ...row } = clientToDb(action.coupon)
+        const { error } = await supabase.from('coupons').update(row).eq('id', id)
+        if (error) console.error('COUPON_UPDATE', error)
+        break
+      }
+      case 'COUPON_DELETE': {
+        const { error } = await supabase.from('coupons').delete().eq('id', action.id)
+        if (error) console.error('COUPON_DELETE', error)
+        break
+      }
+      case 'COUPON_USE': {
+        const { error } = await supabase.from('coupons')
+          .update({ used_count: supabase.rpc ? undefined : 0 }) // usamos increment abajo
+          .eq('id', action.id)
+        // Incremento atómico
+        await supabase.rpc('increment_coupon_use', { p_id: action.id }).catch(() =>
+          // Fallback si no existe la función RPC: leer + escribir
+          supabase.from('coupons').select('used_count').eq('id', action.id).single()
+            .then(({ data }) => data && supabase.from('coupons')
+              .update({ used_count: (data.used_count || 0) + 1 }).eq('id', action.id))
+        )
+        break
+      }
     }
   }, [])
 
