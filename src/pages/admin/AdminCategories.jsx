@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Plus, Pencil, Trash2, X, Check } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
+import Portal from '../../components/Portal'
 import './AdminTable.css'
 
 const EMPTY = { name: '', slug: '' }
@@ -83,7 +84,7 @@ export default function AdminCategories() {
       </div>
 
       {form && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && closeForm()}>
+        <Portal><div className="modal-overlay" onClick={e => e.target === e.currentTarget && closeForm()}>
           <div className="modal modal-sm">
             <div className="modal-header">
               <h2>{form.id ? 'Editar categoría' : 'Nueva categoría'}</h2>
@@ -105,10 +106,11 @@ export default function AdminCategories() {
             </div>
           </div>
         </div>
+      </Portal>
       )}
 
       {del && (
-        <div className="modal-overlay">
+        <Portal><div className="modal-overlay">
           <div className="modal modal-sm">
             <div className="modal-header"><h2>Eliminar categoría</h2></div>
             <div className="modal-body">
@@ -120,6 +122,7 @@ export default function AdminCategories() {
             </div>
           </div>
         </div>
+      </Portal>
       )}
     </div>
   )

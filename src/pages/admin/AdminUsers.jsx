@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, X, Check, Shield, Mail } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase, hasSupabase } from '../../lib/supabase'
 import { ROLES, ROLE_LABELS, ROLE_COLORS, DEMO_USERS } from '../../lib/roles'
+import Portal from '../../components/Portal'
 import '../admin/AdminTable.css'
 import './AdminUsers.css'
 
@@ -164,7 +165,7 @@ export default function AdminUsers() {
 
       {/* Invite / Edit modal */}
       {modal && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setModal(null)}>
+        <Portal><div className="modal-overlay" onClick={e => e.target === e.currentTarget && setModal(null)}>
           <div className="modal modal-sm">
             <div className="modal-header">
               <h2>{modal.mode === 'invite' ? 'Invitar usuario' : 'Cambiar rol'}</h2>
@@ -214,11 +215,12 @@ export default function AdminUsers() {
             </div>
           </div>
         </div>
+      </Portal>
       )}
 
       {/* Delete confirm */}
       {delId && (
-        <div className="modal-overlay">
+        <Portal><div className="modal-overlay">
           <div className="modal modal-sm">
             <div className="modal-header"><h2>Eliminar acceso</h2></div>
             <div className="modal-body"><p>¿Eliminar el acceso al panel de este usuario? No se elimina su cuenta, solo sus permisos.</p></div>
@@ -228,6 +230,7 @@ export default function AdminUsers() {
             </div>
           </div>
         </div>
+      </Portal>
       )}
     </div>
   )

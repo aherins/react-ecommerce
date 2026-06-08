@@ -8,6 +8,7 @@ import {
   COUPON_SCOPE, DISCOUNT_TYPE,
   SCOPE_LABEL, DTYPE_LABEL, generateCode,
 } from '../../lib/coupons'
+import Portal from '../../components/Portal'
 import '../admin/AdminTable.css'
 import './AdminCoupons.css'
 
@@ -53,6 +54,7 @@ function CouponModal({ form, setForm, onSave, onClose, isEdit }) {
   const discountUnit = form.discountType === DISCOUNT_TYPE.PERCENT ? '%' : '€'
 
   return (
+    <Portal>
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal coupon-modal">
         <div className="modal-header">
@@ -196,6 +198,7 @@ function CouponModal({ form, setForm, onSave, onClose, isEdit }) {
         </div>
       </div>
     </div>
+    </Portal>
   )
 }
 
@@ -381,6 +384,7 @@ export default function AdminCoupons() {
 
       {/* Confirmar borrado */}
       {delId && (
+        <Portal>
         <div className="modal-overlay">
           <div className="modal modal-sm">
             <div className="modal-header"><h2>Eliminar cupón</h2></div>
@@ -393,6 +397,7 @@ export default function AdminCoupons() {
             </div>
           </div>
         </div>
+        </Portal>
       )}
     </div>
   )

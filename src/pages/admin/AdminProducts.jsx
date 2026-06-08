@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Plus, Pencil, Trash2, Eye, EyeOff, X, Check } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
+import Portal from '../../components/Portal'
 import './AdminTable.css'
 
 const EMPTY = { name: '', price: '', categoryId: '', image: '', description: '', stock: '', active: true }
@@ -96,7 +97,7 @@ export default function AdminProducts() {
 
       {/* Form Modal */}
       {form && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && closeForm()}>
+        <Portal><div className="modal-overlay" onClick={e => e.target === e.currentTarget && closeForm()}>
           <div className="modal">
             <div className="modal-header">
               <h2>{form.id ? 'Editar producto' : 'Nuevo producto'}</h2>
@@ -145,11 +146,12 @@ export default function AdminProducts() {
             </div>
           </div>
         </div>
+      </Portal>
       )}
 
       {/* Delete confirm */}
       {del && (
-        <div className="modal-overlay">
+        <Portal><div className="modal-overlay">
           <div className="modal modal-sm">
             <div className="modal-header"><h2>Eliminar producto</h2></div>
             <div className="modal-body"><p>¿Seguro que quieres eliminar este producto? Esta acción no se puede deshacer.</p></div>
@@ -159,6 +161,7 @@ export default function AdminProducts() {
             </div>
           </div>
         </div>
+      </Portal>
       )}
     </div>
   )

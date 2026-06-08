@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Eye, X, Truck, Search } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
+import Portal from '../../components/Portal'
 import './AdminTable.css'
 import './AdminOrders.css'
 
@@ -100,7 +101,7 @@ export default function AdminOrders() {
 
       {/* Order detail modal */}
       {selected && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setSelected(null)}>
+        <Portal><div className="modal-overlay" onClick={e => e.target === e.currentTarget && setSelected(null)}>
           <div className="modal order-modal">
             <div className="modal-header">
               <h2>Pedido #{selected.id.slice(-8).toUpperCase()}</h2>
@@ -150,6 +151,7 @@ export default function AdminOrders() {
             </div>
           </div>
         </div>
+      </Portal>
       )}
     </div>
   )
