@@ -207,7 +207,7 @@ export default function CheckoutPage() {
       total: finalTotal, subtotal: cartTotal, discount,
       couponCode: applied?.coupon?.code || null,
       items: (cart||[]).map(i => ({ productId: i.productId, qty: i.qty })),
-      simulated: payment.simulated,
+      simulated: Boolean(payment.simulated),
     }
     dispatch({ type: 'ADD_ORDER', order })
     // Incrementar uso del cupón

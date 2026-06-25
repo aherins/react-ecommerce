@@ -76,10 +76,34 @@
 .shipping-more { font-size:11px; color:var(--muted); margin-left:4px; }
 
 .action-shipping-btn {
-  padding:6px 12px; border-radius:99px; font-size:12px; font-weight:600;
-  font-family:var(--font-body); border:1px solid var(--btn-color);
-  color:var(--btn-color); transition:all var(--transition); white-space:nowrap;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  transition: all var(--transition);
 }
-.action-shipping-btn:hover { background:var(--btn-color); color:#fff; }
+.action-shipping-btn:hover { background: var(--cream); }
 
-.shipping-empty { text-align:center; padding:60px; display:flex; flex-direction:column; align-items:center; gap:12px; color:var(--muted); }
+.sim-badge {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #fef9c3;
+  color: #92400e;
+  vertical-align: middle;
+}
+
+.order-tracking-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--accent);
+  margin: 12px 0 20px;
+}
+
+.order-ship-btn { width: 100%; margin-top: 16px; justify-content: center; }

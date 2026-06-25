@@ -138,6 +138,24 @@
   border-radius: var(--radius);
 }
 
+.login-success {
+  font-size: 13px;
+  color: var(--success);
+  background: #dcfce7;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+}
+
+.login-forgot {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 4px;
+  text-decoration: underline;
+}
+
+.login-forgot:hover { color: var(--ink); }
+
 /* Submit button */
 .login-btn {
   display: flex;

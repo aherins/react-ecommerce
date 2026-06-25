@@ -73,7 +73,7 @@ ON CONFLICT (user_id) DO UPDATE SET role = 'superadmin';`}</pre>
 }
 
 export default function AdminLayout() {
-  const { user, role, loading, signOut, hasAdminAccess, hasSupabase } = useAuth()
+  const { user, role, loading, signOut, hasSupabase } = useAuth()
   const [open, setOpen] = useState(false)
 
   if (loading) return (
@@ -123,7 +123,6 @@ export default function AdminLayout() {
           <span className="topbar-label">Panel de administración</span>
           <div className="topbar-right">
             {!hasSupabase && <span className="topbar-mode">modo demo</span>}
-            <RoleBadge role={role} />
           </div>
         </header>
         <main className="admin-content"><Outlet /></main>

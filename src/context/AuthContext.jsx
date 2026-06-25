@@ -128,7 +128,7 @@ export function AuthProvider({ children }) {
       user, role, loading,
       signIn, signUp, signInWithGoogle, signOut,
       userCan,
-      hasAdminAccess: Boolean(user),
+      hasAdminAccess: Boolean(role),
       hasSupabase,
     }}>
       {children}

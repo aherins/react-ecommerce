@@ -172,3 +172,31 @@
   transition: opacity var(--transition); font-family: var(--font-body);
 }
 .btn-danger:hover { opacity: 0.85; }
+
+.admin-empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-empty-state h3 { font-size: 18px; font-weight: 700; margin-top: 8px; }
+.admin-empty-state p { font-size: 14px; color: var(--muted); max-width: 360px; margin-bottom: 8px; }
+
+.table-empty-row {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+}
+
+.status-readonly {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

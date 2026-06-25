@@ -23,7 +23,11 @@ npm run dev
 
 **Sin credenciales todo funciona en modo demo:**
 - Datos en localStorage
-- Login demo: `admin@artesana.es` / `admin1234`
+- Usuarios demo del panel (sin Supabase):
+  - `superadmin@artesana.es` / `super1234`
+  - `admin@artesana.es` / `admin1234`
+  - `editor@artesana.es` / `editor1234`
+  - `viewer@artesana.es` / `viewer1234`
 - Pagos simulados con tarjetas de prueba
 
 ---
@@ -37,8 +41,14 @@ npm run dev
 | `/carrito`            | Carrito                       |
 | `/checkout`           | Pago (Stripe real o simulado) |
 | `/admin`              | Dashboard admin               |
-| `/admin/productos`    | CRUD productos + Cloudinary   |
+| `/admin/pedidos`      | Pedidos y envíos              |
+| `/admin/productos`    | CRUD productos                |
 | `/admin/categorias`   | CRUD categorías               |
+| `/admin/estadisticas` | Estadísticas y export CSV     |
+| `/admin/cupones`      | Cupones de descuento          |
+| `/admin/usuarios`     | Gestión de roles              |
+| `/cuenta`             | Panel de usuario              |
+| `/cuenta/pedidos`     | Pedidos del usuario           |
 
 ---
 

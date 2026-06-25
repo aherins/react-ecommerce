@@ -4,6 +4,7 @@ import {
   Tag, Users, User, Percent, Euro, Truck, Package
 } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
+import { useAuth } from '../../context/AuthContext'
 import {
   COUPON_SCOPE, DISCOUNT_TYPE,
   SCOPE_LABEL, DTYPE_LABEL, generateCode,
@@ -211,11 +212,16 @@ const SCOPE_DESCRIPTIONS = {
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function AdminCoupons() {
   const { coupons, dispatch } = useStore()
-  const [modal,  setModal]  = useState(null)   // null | 'new' | 'edit'
+  const { userCan } = useAuth()
+  const [modal,  setModal]  = useState(null)
   const [form,   setForm]   = useState(EMPTY_FORM)
   const [editId, setEditId] = useState(null)
   const [delId,  setDelId]  = useState(null)
-  const [filter, setFilter] = useState('all')  // all | active | inactive
+  const [filter, setFilter] = useState('all')
+
+  const canCreate = userCan('cupones.crear')
+  const canEdit   = userCan('cupones.editar')
+  const canDelete = userCan('cupones.borrar')
 
   const filtered = (coupons||[]).filter(c => {
     if (filter === 'active')   return c.active
@@ -291,7 +297,9 @@ export default function AdminCoupons() {
           <h1 className="page-title">Cupones de descuento</h1>
           <p className="page-sub">{(coupons||[]).length} cupones · {(coupons||[]).filter(c=>c.active).length} activos</p>
         </div>
-        <button className="btn-add" onClick={openNew}><Plus size={16}/>Nuevo cupón</button>
+        {canCreate && (
+          <button className="btn-add" onClick={openNew}><Plus size={16}/>Nuevo cupón</button>
+        )}
       </div>
 
       {/* Filtros */}
@@ -355,15 +363,18 @@ export default function AdminCoupons() {
                   {isExpired(c) && <span className="expired-tag">Caducado</span>}
                 </td>
                 <td>
-                  <button className={`status-badge ${c.active && !isExpired(c) ? 'active' : 'inactive'}`}
-                    onClick={() => toggleActive(c)}>
+                  <button
+                    className={`status-badge ${c.active && !isExpired(c) ? 'active' : 'inactive'}`}
+                    onClick={() => canEdit && toggleActive(c)}
+                    disabled={!canEdit}
+                  >
                     {c.active && !isExpired(c) ? 'Activo' : 'Inactivo'}
                   </button>
                 </td>
                 <td>
                   <div className="row-actions">
-                    <button className="action-btn edit" onClick={() => openEdit(c)} title="Editar"><Pencil size={14}/></button>
-                    <button className="action-btn del"  onClick={() => setDelId(c.id)} title="Eliminar"><Trash2 size={14}/></button>
+                    {canEdit && <button className="action-btn edit" onClick={() => openEdit(c)} title="Editar"><Pencil size={14}/></button>}
+                    {canDelete && <button className="action-btn del" onClick={() => setDelId(c.id)} title="Eliminar"><Trash2 size={14}/></button>}
                   </div>
                 </td>
               </tr>

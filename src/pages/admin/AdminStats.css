@@ -1,5 +1,14 @@
 .stats-page { max-width: 1000px; animation: fadeUp 0.4s ease both; }
 
+.stats-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
 .stats-kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
 
 .stat-card {

@@ -20,7 +20,6 @@ import AdminProducts from './pages/admin/AdminProducts'
 import AdminCategories from './pages/admin/AdminCategories'
 import AdminOrders from './pages/admin/AdminOrders'
 import AdminStats from './pages/admin/AdminStats'
-import AdminShipping from './pages/admin/AdminShipping'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminCoupons from './pages/admin/AdminCoupons'
 
@@ -58,22 +57,19 @@ export default function App() {
                 <RequirePermission permission="pedidos.ver"><AdminOrders /></RequirePermission>
               }/>
               <Route path="productos" element={
-                <RequirePermission permission="productos"><AdminProducts /></RequirePermission>
+                <RequirePermission permission="productos.ver"><AdminProducts /></RequirePermission>
               }/>
               <Route path="categorias" element={
-                <RequirePermission permission="categorias"><AdminCategories /></RequirePermission>
+                <RequirePermission permission="categorias.ver"><AdminCategories /></RequirePermission>
               }/>
               <Route path="estadisticas" element={
                 <RequirePermission permission="estadisticas.ver"><AdminStats /></RequirePermission>
-              }/>
-              <Route path="envios" element={
-                <RequirePermission permission="envios"><AdminShipping /></RequirePermission>
               }/>
               <Route path="usuarios" element={
                 <RequirePermission permission="usuarios.ver"><AdminUsers /></RequirePermission>
               }/>
               <Route path="cupones" element={
-                <RequirePermission permission="cupones"><AdminCoupons /></RequirePermission>
+                <RequirePermission permission="cupones.ver"><AdminCoupons /></RequirePermission>
               }/>
             </Route>
           </Routes>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Plus, Pencil, Trash2, Eye, EyeOff, X, Check } from 'lucide-react'
+import { Plus, Pencil, Trash2, Eye, EyeOff, X, Check, Package } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
+import { useAuth } from '../../context/AuthContext'
 import Portal from '../../components/Portal'
 import './AdminTable.css'
 
@@ -8,8 +9,14 @@ const EMPTY = { name: '', price: '', categoryId: '', image: '', description: '',
 
 export default function AdminProducts() {
   const { products, categories, dispatch } = useStore()
-  const [form, setForm] = useState(null) // null=closed, {}=new/edit
+  const { userCan } = useAuth()
+  const [form, setForm] = useState(null)
   const [del, setDel] = useState(null)
+
+  const canCreate = userCan('productos.crear')
+  const canEdit   = userCan('productos.editar')
+  const canDelete = userCan('productos.borrar')
+  const canToggle = userCan('productos.toggle')
 
   function openNew() { setForm({ ...EMPTY }) }
   function openEdit(p) { setForm({ ...p, price: String(p.price), stock: String(p.stock) }) }
@@ -49,9 +56,21 @@ export default function AdminProducts() {
           <h1 className="page-title">Productos</h1>
           <p className="page-sub">{products.length} productos en total</p>
         </div>
-        <button className="btn-add" onClick={openNew}><Plus size={16} />Nuevo producto</button>
+        {canCreate && (
+          <button className="btn-add" onClick={openNew}><Plus size={16} />Nuevo producto</button>
+        )}
       </div>
 
+      {products.length === 0 ? (
+        <div className="admin-empty-state">
+          <Package size={40} color="var(--border)"/>
+          <h3>Sin productos</h3>
+          <p>Crea el primero para empezar a vender.</p>
+          {canCreate && (
+            <button className="btn-add" onClick={openNew}><Plus size={16}/>Nuevo producto</button>
+          )}
+        </div>
+      ) : (
       <div className="table-wrap">
         <table className="admin-table">
           <thead>
@@ -79,14 +98,18 @@ export default function AdminProducts() {
                   <span className={`stock-badge ${p.stock <= 3 ? 'low' : ''}`}>{p.stock}</span>
                 </td>
                 <td>
-                  <button className={`status-badge ${p.active ? 'active' : 'inactive'}`} onClick={() => toggleActive(p)}>
+                  <button
+                    className={`status-badge ${p.active ? 'active' : 'inactive'}`}
+                    onClick={() => canToggle && toggleActive(p)}
+                    disabled={!canToggle}
+                  >
                     {p.active ? <><Eye size={12} />Activo</> : <><EyeOff size={12} />Inactivo</>}
                   </button>
                 </td>
                 <td>
                   <div className="row-actions">
-                    <button className="action-btn edit" onClick={() => openEdit(p)} title="Editar"><Pencil size={14} /></button>
-                    <button className="action-btn del" onClick={() => setDel(p.id)} title="Eliminar"><Trash2 size={14} /></button>
+                    {canEdit && <button className="action-btn edit" onClick={() => openEdit(p)} title="Editar"><Pencil size={14} /></button>}
+                    {canDelete && <button className="action-btn del" onClick={() => setDel(p.id)} title="Eliminar"><Trash2 size={14} /></button>}
                   </div>
                 </td>
               </tr>
@@ -94,6 +117,7 @@ export default function AdminProducts() {
           </tbody>
         </table>
       </div>
+      )}
 
       {/* Form Modal */}
       {form && (

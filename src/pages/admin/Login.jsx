@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogIn, Info } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabase'
 import { DEMO_USERS, ROLE_LABELS, ROLE_COLORS } from '../../lib/roles'
 import './Login.css'
 
@@ -24,9 +25,10 @@ export default function Login() {
   const [error,       setError]       = useState('')
   const [loading,     setLoading]     = useState(false)
   const [loadingG,    setLoadingG]    = useState(false)
+  const [resetSent,   setResetSent]   = useState(false)
 
   async function handleSubmit(e) {
-    e.preventDefault(); setError(''); setLoading(true)
+    e.preventDefault(); setError(''); setResetSent(false); setLoading(true)
     const { error } = await signIn(email, password)
     setLoading(false)
     if (error) { setError(error.message); return }
@@ -38,6 +40,19 @@ export default function Login() {
     const { error } = await signInWithGoogle()
     if (error) { setError(error.message); setLoadingG(false); return }
     if (!hasSupabase) navigate('/admin')
+  }
+
+  async function handleResetPassword(e) {
+    e.preventDefault()
+    if (!hasSupabase || !supabase) return
+    if (!email.trim()) { setError('Introduce tu email para recuperar la contraseña.'); return }
+    setError(''); setResetSent(false); setLoading(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/admin`,
+    })
+    setLoading(false)
+    if (error) setError(error.message)
+    else setResetSent(true)
   }
 
   return (
@@ -86,9 +101,15 @@ export default function Login() {
               value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"/>
           </div>
           {error && <p className="login-error">{error}</p>}
+          {resetSent && <p className="login-success">Revisa tu email para restablecer la contraseña.</p>}
           <button className="login-btn" type="submit" disabled={loading}>
             {loading ? <span className="spinner"/> : <><LogIn size={16}/>Entrar</>}
           </button>
+          {hasSupabase && (
+            <button type="button" className="login-forgot" onClick={handleResetPassword}>
+              ¿Olvidaste la contraseña?
+            </button>
+          )}
         </form>
       </div>
     </div>

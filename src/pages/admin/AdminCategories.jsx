@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Plus, Pencil, Trash2, X, Check } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Check, Tag } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
+import { useAuth } from '../../context/AuthContext'
 import Portal from '../../components/Portal'
 import './AdminTable.css'
 
@@ -12,8 +13,13 @@ function toSlug(str) {
 
 export default function AdminCategories() {
   const { categories, products, dispatch } = useStore()
+  const { userCan } = useAuth()
   const [form, setForm] = useState(null)
   const [del, setDel] = useState(null)
+
+  const canCreate = userCan('categorias.crear')
+  const canEdit   = userCan('categorias.editar')
+  const canDelete = userCan('categorias.borrar')
 
   function openNew() { setForm({ ...EMPTY }) }
   function openEdit(c) { setForm({ ...c }) }
@@ -52,9 +58,21 @@ export default function AdminCategories() {
           <h1 className="page-title">Categorías</h1>
           <p className="page-sub">{categories.length} categorías</p>
         </div>
-        <button className="btn-add" onClick={openNew}><Plus size={16} />Nueva categoría</button>
+        {canCreate && (
+          <button className="btn-add" onClick={openNew}><Plus size={16} />Nueva categoría</button>
+        )}
       </div>
 
+      {categories.length === 0 ? (
+        <div className="admin-empty-state">
+          <Tag size={40} color="var(--border)"/>
+          <h3>Sin categorías</h3>
+          <p>Organiza tu catálogo creando la primera categoría.</p>
+          {canCreate && (
+            <button className="btn-add" onClick={openNew}><Plus size={16}/>Nueva categoría</button>
+          )}
+        </div>
+      ) : (
       <div className="table-wrap">
         <table className="admin-table">
           <thead>
@@ -73,8 +91,8 @@ export default function AdminCategories() {
                 <td>{countProducts(c.id)}</td>
                 <td>
                   <div className="row-actions">
-                    <button className="action-btn edit" onClick={() => openEdit(c)} title="Editar"><Pencil size={14} /></button>
-                    <button className="action-btn del" onClick={() => setDel(c.id)} title="Eliminar"><Trash2 size={14} /></button>
+                    {canEdit && <button className="action-btn edit" onClick={() => openEdit(c)} title="Editar"><Pencil size={14} /></button>}
+                    {canDelete && <button className="action-btn del" onClick={() => setDel(c.id)} title="Eliminar"><Trash2 size={14} /></button>}
                   </div>
                 </td>
               </tr>
@@ -82,6 +100,7 @@ export default function AdminCategories() {
           </tbody>
         </table>
       </div>
+      )}
 
       {form && (
         <Portal><div className="modal-overlay" onClick={e => e.target === e.currentTarget && closeForm()}>

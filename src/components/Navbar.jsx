@@ -2,10 +2,12 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShoppingBag, Menu, X, Settings, Heart, User, Package } from 'lucide-react'
 import { useStore } from '../context/StoreContext'
+import { useAuth } from '../context/AuthContext'
 import './Navbar.css'
 
 export default function Navbar() {
   const { cartCount, wishlist, categories } = useStore()
+  const { hasAdminAccess } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -34,9 +36,11 @@ export default function Navbar() {
             <ShoppingBag size={20} />
             {cartCount > 0 && <span className="icon-badge">{cartCount}</span>}
           </Link>
-          <Link to="/admin" className="navbar-icon-btn navbar-admin" title="Admin">
-            <Settings size={18} />
-          </Link>
+          {hasAdminAccess && (
+            <Link to="/admin" className="navbar-icon-btn navbar-admin" title="Admin">
+              <Settings size={18} />
+            </Link>
+          )}
           <button className="navbar-burger" onClick={() => setMenuOpen(o => !o)}>
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>

@@ -1,16 +1,17 @@
-// ─── Roles disponibles ────────────────────────────────────────────────────────
+import { LayoutDashboard, ShoppingBag, Package, Tag, BarChart2, Users, Ticket } from 'lucide-react'
+
 export const ROLES = {
   SUPERADMIN: 'superadmin',
-  ADMIN:      'admin',
-  EDITOR:     'editor',
-  VIEWER:     'viewer',
+  ADMIN: 'admin',
+  EDITOR: 'editor',
+  VIEWER: 'viewer',
 }
 
 export const ROLE_LABELS = {
   superadmin: 'Super Admin',
-  admin:      'Administrador',
-  editor:     'Editor',
-  viewer:     'Visualizador',
+  admin: 'Administrador',
+  editor: 'Editor',
+  viewer: 'Visualizador',
 }
 
 export const ROLE_COLORS = {
@@ -20,69 +21,59 @@ export const ROLE_COLORS = {
   viewer:     { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0' },
 }
 
-// ─── Permisos por sección ─────────────────────────────────────────────────────
-// Cada permiso: qué roles pueden acceder
 export const PERMISSIONS = {
-  // Secciones del panel
   dashboard:    ['superadmin', 'admin', 'editor', 'viewer'],
-  pedidos:      ['superadmin', 'admin', 'editor', 'viewer'],
-  productos:    ['superadmin', 'admin', 'editor'],
-  categorias:   ['superadmin', 'admin', 'editor'],
-  estadisticas: ['superadmin', 'admin'],
-  envios:       ['superadmin', 'admin', 'editor'],
-  usuarios:     ['superadmin'],              // solo superadmin gestiona usuarios
-  cupones:      ['superadmin', 'admin'],      // cupones: solo admin y superadmin
 
-  // Acciones específicas
-  'productos.crear':   ['superadmin', 'admin', 'editor'],
-  'productos.editar':  ['superadmin', 'admin', 'editor'],
-  'productos.borrar':  ['superadmin', 'admin'],
-  'productos.toggle':  ['superadmin', 'admin', 'editor'],
+  'pedidos.ver':      ['superadmin', 'admin', 'editor', 'viewer'],
+  'pedidos.estado':   ['superadmin', 'admin', 'editor'],
+  'pedidos.tracking': ['superadmin', 'admin', 'editor'],
+  'pedidos.cancelar': ['superadmin', 'admin'],
 
-  'categorias.crear':  ['superadmin', 'admin', 'editor'],
-  'categorias.editar': ['superadmin', 'admin', 'editor'],
-  'categorias.borrar': ['superadmin', 'admin'],
+  'productos.ver':    ['superadmin', 'admin', 'editor', 'viewer'],
+  'productos.crear':  ['superadmin', 'admin', 'editor'],
+  'productos.editar': ['superadmin', 'admin', 'editor'],
+  'productos.borrar': ['superadmin', 'admin'],
+  'productos.toggle': ['superadmin', 'admin', 'editor'],
 
-  'pedidos.ver':        ['superadmin', 'admin', 'editor', 'viewer'],
-  'pedidos.estado':     ['superadmin', 'admin', 'editor'],
-  'pedidos.tracking':   ['superadmin', 'admin', 'editor'],
-  'pedidos.cancelar':   ['superadmin', 'admin'],
+  'categorias.ver':   ['superadmin', 'admin', 'editor', 'viewer'],
+  'categorias.crear': ['superadmin', 'admin', 'editor'],
+  'categorias.editar':['superadmin', 'admin', 'editor'],
+  'categorias.borrar':['superadmin', 'admin'],
 
-  'estadisticas.ver':   ['superadmin', 'admin'],
-  'estadisticas.export':['superadmin'],
+  'estadisticas.ver':    ['superadmin', 'admin'],
+  'estadisticas.export': ['superadmin', 'admin'],
 
-  'usuarios.ver':       ['superadmin'],
-  'usuarios.crear':     ['superadmin'],
-  'usuarios.editar':    ['superadmin'],
-  'usuarios.borrar':    ['superadmin'],
-  'usuarios.rol':       ['superadmin'],
+  'usuarios.ver':    ['superadmin'],
+  'usuarios.crear':  ['superadmin'],
+  'usuarios.editar': ['superadmin'],
+  'usuarios.borrar': ['superadmin'],
+  'usuarios.rol':    ['superadmin'],
+
+  'cupones.ver':    ['superadmin', 'admin', 'editor', 'viewer'],
+  'cupones.crear':  ['superadmin', 'admin'],
+  'cupones.editar': ['superadmin', 'admin'],
+  'cupones.borrar': ['superadmin', 'admin'],
 }
 
-// ─── Helper: ¿tiene permiso? ─────────────────────────────────────────────────
 export function can(role, permission) {
   if (!role) return false
   return (PERMISSIONS[permission] ?? []).includes(role)
 }
 
-// ─── Helper: nav items filtrados por rol ─────────────────────────────────────
+export const NAV_ITEMS = [
+  { to: '/admin',              label: 'Dashboard',    icon: LayoutDashboard, permission: 'dashboard',        end: true },
+  { to: '/admin/pedidos',      label: 'Pedidos',       icon: ShoppingBag,     permission: 'pedidos.ver'              },
+  { to: '/admin/productos',    label: 'Productos',     icon: Package,         permission: 'productos.ver'            },
+  { to: '/admin/categorias',   label: 'Categorías',    icon: Tag,             permission: 'categorias.ver'           },
+  { to: '/admin/estadisticas', label: 'Estadísticas',  icon: BarChart2,       permission: 'estadisticas.ver'         },
+  { to: '/admin/usuarios',     label: 'Usuarios',      icon: Users,           permission: 'usuarios.ver'             },
+  { to: '/admin/cupones',      label: 'Cupones',       icon: Ticket,          permission: 'cupones.ver'              },
+]
+
 export function navForRole(role) {
   return NAV_ITEMS.filter(n => can(role, n.permission))
 }
 
-import { LayoutDashboard, ShoppingBag, Package, Tag, BarChart2, Truck, Users, Ticket } from 'lucide-react'
-
-export const NAV_ITEMS = [
-  { to: '/admin',              label: 'Dashboard',    icon: LayoutDashboard, permission: 'dashboard',    end: true },
-  { to: '/admin/pedidos',      label: 'Pedidos',       icon: ShoppingBag,     permission: 'pedidos'              },
-  { to: '/admin/productos',    label: 'Productos',     icon: Package,         permission: 'productos'            },
-  { to: '/admin/categorias',   label: 'Categorías',    icon: Tag,             permission: 'categorias'           },
-  { to: '/admin/estadisticas', label: 'Estadísticas',  icon: BarChart2,       permission: 'estadisticas'         },
-  { to: '/admin/envios',       label: 'Envíos',        icon: Truck,           permission: 'envios'               },
-  { to: '/admin/usuarios',     label: 'Usuarios',      icon: Users,           permission: 'usuarios'             },
-  { to: '/admin/cupones',      label: 'Cupones',       icon: Ticket,          permission: 'cupones'              },
-]
-
-// ─── Usuarios demo para modo sin Supabase ────────────────────────────────────
 export const DEMO_USERS = [
   { id: 'demo-1', email: 'superadmin@artesana.es', password: 'super1234',  role: 'superadmin', name: 'Super Admin' },
   { id: 'demo-2', email: 'admin@artesana.es',      password: 'admin1234',  role: 'admin',      name: 'Administrador' },
