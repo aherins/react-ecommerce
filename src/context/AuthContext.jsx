@@ -109,7 +109,7 @@ export function AuthProvider({ children }) {
     return result
   }
 
-  async function signInWithGoogle() {
+  async function signInWithGoogle(redirectTo = '/cuenta') {
     if (!hasSupabase) {
       const u = {
         id: 'demo-google', email: 'google@demo.es', _demoRole: 'viewer',
@@ -122,7 +122,14 @@ export function AuthProvider({ children }) {
     }
     return supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/admin` },
+      options: { redirectTo: `${window.location.origin}${redirectTo}` },
+    })
+  }
+
+  async function resetPassword(email) {
+    if (!hasSupabase) return { error: { message: 'No disponible en modo demo' } }
+    return supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/cuenta`,
     })
   }
 
@@ -140,7 +147,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       user, role, loading,
-      signIn, signUp, signInWithGoogle, signOut,
+      signIn, signUp, signInWithGoogle, signOut, resetPassword,
       userCan,
       hasAdminAccess: Boolean(role),
       hasSupabase,
@@ -159,6 +166,7 @@ export function useAuth() {
     signUp: async () => ({ error: null }),
     signInWithGoogle: async () => ({ error: null }),
     signOut: async () => {},
+    resetPassword: async () => ({ error: null }),
     userCan: () => false,
     hasAdminAccess: false,
     hasSupabase: false,

@@ -23,7 +23,9 @@ import AdminStats from './pages/admin/AdminStats'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminCoupons from './pages/admin/AdminCoupons'
 import AdminCustomers from './pages/admin/AdminCustomers'
-import AdminCustomerDetail from './pages/admin/AdminCustomerDetail'
+import LegalPage from './pages/LegalPage'
+import NotFoundPage from './pages/NotFoundPage'
+import AccountProfilePage from './pages/account/AccountProfilePage'
 
 // AuthProvider envuelve TODA la app pero el loading ya no bloquea
 // rutas públicas gracias al fix en AuthContext (loading solo afecta a AdminLayout)
@@ -42,12 +44,15 @@ export default function App() {
               <Route path="/contacto"             element={<ContactPage />} />
               <Route path="/seguimiento"          element={<TrackingPage />} />
               <Route path="/seguimiento/:orderId" element={<TrackingPage />} />
+              <Route path="/legal/:page" element={<LegalPage />} />
               <Route path="/cuenta" element={<RequireAccount />}>
                 <Route element={<AccountLayout />}>
                   <Route index element={<AccountDashboard />} />
                   <Route path="pedidos" element={<MyOrdersPage />} />
+                  <Route path="perfil" element={<AccountProfilePage />} />
                 </Route>
               </Route>
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
 
             {/* ── Admin ─────────────────────────────────────────── */}

@@ -24,28 +24,19 @@ create index if not exists orders_created_at_idx on public.orders (created_at de
 create index if not exists orders_user_id_idx    on public.orders (user_id);
 create index if not exists orders_email_idx      on public.orders (email);
 
+-- Ver supabase/orders_rls.sql para políticas seguras (reemplaza orders_select_public)
+
+alter table public.orders add column if not exists shipping_address jsonb;
+alter table public.orders add column if not exists customer_name text;
+alter table public.orders add column if not exists customer_phone text;
+
 alter table public.orders enable row level security;
 
--- Limpiar políticas previas si re-ejecutas el script
-drop policy if exists "orders_select_public"     on public.orders;
-drop policy if exists "orders_insert_public"     on public.orders;
+drop policy if exists "orders_select_public" on public.orders;
+drop policy if exists "orders_insert_public" on public.orders;
 drop policy if exists "orders_update_authenticated" on public.orders;
 
--- Cualquiera puede leer (seguimiento por referencia)
-create policy "orders_select_public"
-  on public.orders for select
-  using (true);
-
--- Checkout: invitados (anon) y usuarios logueados pueden crear pedidos
-create policy "orders_insert_public"
-  on public.orders for insert
-  with check (true);
-
--- Admin: solo usuarios autenticados pueden actualizar estado / tracking
-create policy "orders_update_authenticated"
-  on public.orders for update
-  using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
+-- Tras migrar, ejecuta supabase/orders_rls.sql para políticas de privacidad
 
 -- Realtime (opcional — si falla, ignóralo; la app funciona igual)
 do $$

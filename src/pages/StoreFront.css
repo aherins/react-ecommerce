@@ -101,7 +101,24 @@
   color: var(--muted);
 }
 
-/* Footer — global en index.css (.site-footer) */
+.shop-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.shop-status.error {
+  color: var(--danger);
+  background: #fee2e2;
+  border-radius: var(--radius);
+}
+
+/* Footer — global en Footer.css */
 
 .shop-activity-wrap {
   max-width: 1280px;

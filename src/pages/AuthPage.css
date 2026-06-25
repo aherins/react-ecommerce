@@ -59,6 +59,27 @@ form { display: flex; flex-direction: column; gap: 16px; }
 .auth-switch { font-size: 13px; color: var(--muted); text-align: center; margin-top: 16px; }
 .auth-switch button { color: var(--accent); font-size: 13px; cursor: pointer; text-decoration: underline; }
 
+.auth-forgot {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  cursor: pointer;
+}
+
+.auth-forgot:hover { color: var(--ink); }
+
+.auth-success {
+  font-size: 13px;
+  color: var(--success);
+  background: #dcfce7;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+}
+
 .auth-store-link {
   display: flex;
   align-items: center;

@@ -7,7 +7,7 @@ export async function syncOrderAction(action) {
   switch (action.type) {
     case 'ADD_ORDER': {
       const { error } = await supabase.from('orders').insert(orderToDb(action.order))
-      if (error) console.error('ADD_ORDER:', error.message)
+      if (error) throw new Error(error.message)
       break
     }
     case 'ORDER_UPDATE': {
@@ -16,7 +16,7 @@ export async function syncOrderAction(action) {
       if (action.patch.trackingNumber !== undefined) patch.tracking_number = action.patch.trackingNumber
       if (Object.keys(patch).length === 0) break
       const { error } = await supabase.from('orders').update(patch).eq('id', action.id)
-      if (error) console.error('ORDER_UPDATE:', error.message)
+      if (error) throw new Error(error.message)
       break
     }
   }
@@ -26,7 +26,10 @@ export const ORDER_ACTIONS = new Set(['SET_ORDERS', 'ADD_ORDER', 'ORDER_UPDATE']
 
 export async function fetchOrders() {
   if (!hasSupabase) return []
-  const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false })
   if (error) throw error
   return data || []
 }

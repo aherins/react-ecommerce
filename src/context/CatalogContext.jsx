@@ -3,6 +3,11 @@ import { supabase, hasSupabase } from '../lib/supabase'
 import { catalogReducer } from './store/catalogReducer'
 import { syncCatalogAction } from './store/catalogSync'
 import { couponFromDb } from './store/couponMappers'
+import { DEMO_CATEGORIES, DEMO_PRODUCTS } from '../lib/demoData'
+import { SEED_COUPONS } from '../lib/coupons'
+import { loadLocal, saveLocal } from './store/helpers'
+
+const DEMO_CATALOG_KEY = 'demo_catalog'
 
 const CatalogContext = createContext(null)
 
@@ -17,6 +22,21 @@ export function CatalogProvider({ children }) {
 
   useEffect(() => {
     if (!hasSupabase) {
+      const saved = loadLocal(DEMO_CATALOG_KEY)
+      if (saved?.products?.length) {
+        dispatch({ type: 'SET_PRODUCTS', products: saved.products })
+        dispatch({ type: 'SET_CATEGORIES', categories: saved.categories })
+        dispatch({ type: 'SET_COUPONS', coupons: saved.coupons || SEED_COUPONS })
+      } else {
+        dispatch({ type: 'SET_PRODUCTS', products: DEMO_PRODUCTS })
+        dispatch({ type: 'SET_CATEGORIES', categories: DEMO_CATEGORIES })
+        dispatch({ type: 'SET_COUPONS', coupons: SEED_COUPONS })
+        saveLocal(DEMO_CATALOG_KEY, {
+          products: DEMO_PRODUCTS,
+          categories: DEMO_CATEGORIES,
+          coupons: SEED_COUPONS,
+        })
+      }
       setLoading(false)
       return
     }

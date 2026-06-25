@@ -43,6 +43,8 @@ export function cartReducer(state, action, products = []) {
           : [...state.wishlist, action.productId],
       }
     }
+    case 'SET_WISHLIST':
+      return { ...state, wishlist: action.wishlist || [] }
 
     default:
       return state

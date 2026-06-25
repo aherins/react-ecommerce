@@ -30,6 +30,15 @@ export const customerSync = {
     await this.touchLastSeen(userId)
   },
 
+  async fetchWishlist(userId) {
+    if (!hasSupabase || !userId) return []
+    const { data } = await supabase
+      .from('wishlist_items')
+      .select('product_id')
+      .eq('user_id', userId)
+    return (data || []).map(r => r.product_id)
+  },
+
   async syncWishlist(userId, productIds) {
     if (!hasSupabase || !userId) return
 

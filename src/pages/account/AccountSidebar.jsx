@@ -24,6 +24,9 @@ export default function AccountSidebar() {
         <NavLink to="/cuenta" end className={({ isActive }) => `account-nav-item ${isActive ? 'active' : ''}`}>
           <LayoutDashboard size={16}/> Resumen
         </NavLink>
+        <NavLink to="/cuenta/perfil" className={({ isActive }) => `account-nav-item ${isActive ? 'active' : ''}`}>
+          <User size={16}/> Mi perfil
+        </NavLink>
         <NavLink to="/cuenta/pedidos" className={({ isActive }) => `account-nav-item ${isActive ? 'active' : ''}`}>
           <Package size={16}/> Mis pedidos
         </NavLink>

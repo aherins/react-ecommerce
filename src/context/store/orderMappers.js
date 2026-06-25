@@ -11,6 +11,9 @@ export function orderToDb(o) {
     coupon_code:      o.couponCode || null,
     items:            o.items || [],
     email:            o.email || null,
+    customer_name:    o.customerName || null,
+    customer_phone:   o.customerPhone || null,
+    shipping_address: o.shippingAddress || null,
     tracking_number:  o.trackingNumber || null,
     simulated:        o.simulated || false,
   }
@@ -29,6 +32,9 @@ export function orderFromDb(r) {
     couponCode:     r.coupon_code,
     items:          r.items || [],
     email:          r.email,
+    customerName:   r.customer_name,
+    customerPhone:  r.customer_phone,
+    shippingAddress: r.shipping_address,
     trackingNumber: r.tracking_number,
     simulated:      r.simulated,
   }

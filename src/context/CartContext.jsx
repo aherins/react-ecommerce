@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react'
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo, useRef } from 'react'
 import { activity } from '../lib/activity'
 import { customerSync } from '../lib/customerSync'
+import { hasSupabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 import { useCatalog } from './CatalogContext'
 import { cartReducer } from './store/cartReducer'
@@ -20,10 +21,26 @@ export function CartProvider({ children }) {
     })
   )
 
+  const wishlistHydrated = useRef(false)
+
   useEffect(() => { saveLocal('cart', state.cart) }, [state.cart])
   useEffect(() => { saveLocal('wishlist', state.wishlist) }, [state.wishlist])
+
   useEffect(() => {
-    if (user?.id) customerSync.syncWishlist(user.id, state.wishlist)
+    if (!user?.id || !hasSupabase) {
+      wishlistHydrated.current = false
+      return
+    }
+    customerSync.fetchWishlist(user.id).then(ids => {
+      const merged = [...new Set([...loadLocal('wishlist'), ...ids])]
+      dispatch({ type: 'SET_WISHLIST', wishlist: merged })
+      wishlistHydrated.current = true
+    })
+  }, [user?.id])
+
+  useEffect(() => {
+    if (!user?.id || !wishlistHydrated.current) return
+    customerSync.syncWishlist(user.id, state.wishlist)
   }, [state.wishlist, user?.id])
 
   const smartDispatch = useCallback((action) => {

@@ -94,6 +94,53 @@
 .detail-add:hover:not(:disabled) { background: var(--accent); }
 .detail-add:disabled { opacity: 0.4; cursor: not-allowed; }
 
+.detail-qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.detail-qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+
+.detail-qty-controls button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+}
+
+.detail-actions { display: flex; gap: 12px; align-items: center; }
+
+.detail-wish {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.detail-wish.active { color: var(--accent); border-color: var(--accent); }
+
+.detail-related { margin-top: 48px; }
+.detail-related h2 { font-family: var(--font-display); font-size: 20px; margin-bottom: 20px; }
+.product-grid.compact { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.detail-loading, .notfound { padding: 80px 24px; text-align: center; }
+.detail-activity-wrap { margin-top: 48px; max-width: 480px; }
+
 @media (max-width: 768px) {
   .detail-layout { grid-template-columns: 1fr; gap: 32px; }
 }

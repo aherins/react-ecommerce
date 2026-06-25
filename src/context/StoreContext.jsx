@@ -29,6 +29,7 @@ export function useStore() {
 
     if (ORDER_ACTIONS.has(action.type)) {
       if (action.type === 'ADD_ORDER') {
+        await orders.dispatch(action)
         for (const item of action.order.items || []) {
           const product = catalog.products.find(p => p.id === item.productId)
           if (!product) continue
@@ -40,6 +41,7 @@ export function useStore() {
             product: updated,
           })
         }
+        return
       }
       await orders.dispatch(action)
       return

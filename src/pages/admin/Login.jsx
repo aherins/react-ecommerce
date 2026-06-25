@@ -37,7 +37,7 @@ export default function Login() {
 
   async function handleGoogle() {
     setError(''); setLoadingG(true)
-    const { error } = await signInWithGoogle()
+    const { error } = await signInWithGoogle('/admin')
     if (error) { setError(error.message); setLoadingG(false); return }
     if (!hasSupabase) navigate('/admin')
   }

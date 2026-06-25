@@ -126,3 +126,14 @@
   font-size: 14px;
   color: var(--muted);
 }
+
+.profile-form { max-width: 400px; }
+.profile-form .field { margin-bottom: 16px; }
+.profile-form label { display: block; font-size: 13px; margin-bottom: 6px; }
+.profile-form input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.profile-ok { font-size: 13px; color: var(--success); margin-bottom: 12px; }

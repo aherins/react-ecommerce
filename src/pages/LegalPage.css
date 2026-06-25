@@ -1,0 +1,5 @@
+.legal-main { padding: 40px 24px 80px; }
+.legal-inner { max-width: 680px; margin: 0 auto; }
+.legal-back { font-size: 13px; color: var(--muted); display: inline-block; margin-bottom: 20px; }
+.legal-inner h1 { font-family: var(--font-display); font-size: 28px; margin-bottom: 16px; }
+.legal-inner p { line-height: 1.7; color: var(--muted); }

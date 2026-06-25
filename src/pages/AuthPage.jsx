@@ -16,13 +16,24 @@ function GoogleIcon() {
 }
 
 function LoginForm({ onSwitch }) {
-  const { signIn, signInWithGoogle, hasSupabase } = useAuth()
+  const { signIn, signInWithGoogle, resetPassword, hasSupabase } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
   const [loadingG, setLoadingG] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
+
+  async function handleReset(e) {
+    e.preventDefault()
+    if (!email.trim()) { setError('Introduce tu email.'); return }
+    setError(''); setLoading(true)
+    const { error } = await resetPassword(email)
+    setLoading(false)
+    if (error) setError(error.message)
+    else setResetSent(true)
+  }
 
   async function handleSubmit(e) {
     e.preventDefault(); setError(''); setLoading(true)
@@ -55,10 +66,14 @@ function LoginForm({ onSwitch }) {
         <div className="field"><label>Contraseña</label>
           <input type="password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••"/></div>
         {error && <p className="auth-error">{error}</p>}
+        {resetSent && <p className="auth-success">Revisa tu email para restablecer la contraseña.</p>}
         <button className="submit-btn" type="submit" disabled={loading}>
           {loading ? <span className="spinner"/> : <><LogIn size={16}/>Entrar</>}
         </button>
       </form>
+      {hasSupabase && (
+        <button type="button" className="auth-forgot" onClick={handleReset}>¿Olvidaste la contraseña?</button>
+      )}
       <p className="auth-switch">¿No tienes cuenta? <button onClick={onSwitch}>Regístrate</button></p>
     </div>
   )

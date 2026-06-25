@@ -19,10 +19,20 @@ export default function ContactPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
-    // Simula envío — en producción conectar con Resend o similar
-    await new Promise(r => setTimeout(r, 1200))
+    setSent(false)
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Error al enviar')
+      setSent(true)
+    } catch (err) {
+      alert(err.message)
+    }
     setLoading(false)
-    setSent(true)
   }
 
   return (

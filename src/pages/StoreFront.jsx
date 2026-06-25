@@ -2,13 +2,14 @@ import React, { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import RecentActivity from '../components/RecentActivity'
 import ProductCard from '../components/ProductCard'
+import PageMeta from '../components/PageMeta'
 import { useStore } from '../context/StoreContext'
 import { useAuth } from '../context/AuthContext'
 import { activity } from '../lib/activity'
 import './StoreFront.css'
 
 export default function StoreFront() {
-  const { products, categories } = useStore()
+  const { products, categories, loading, dbError } = useStore()
   const { user } = useAuth()
   const [params, setParams] = useSearchParams()
   const [search, setSearch] = useState('')
@@ -22,6 +23,7 @@ export default function StoreFront() {
     setSearch(q)
     if (q) activity.trackSearch(q, user?.id)
   }
+
   const activeCat = params.get('cat') || ''
 
   const filtered = products.filter(p => {
@@ -34,46 +36,41 @@ export default function StoreFront() {
 
   return (
     <div className="storefront">
+      <PageMeta/>
       <section className="hero">
         <div className="hero-inner">
           <span className="hero-tag">Hecho a mano · Sevilla</span>
-          <h1 className="hero-title">Objetos que<br />cuentan algo</h1>
+          <h1 className="hero-title">Objetos que<br/>cuentan algo</h1>
           <p className="hero-sub">Artesanía contemporánea para el hogar cotidiano</p>
         </div>
       </section>
 
       <main className="shop-main">
+        {loading && (
+          <div className="shop-status"><span className="spinner dark"/> Cargando catálogo…</div>
+        )}
+        {dbError && !loading && (
+          <div className="shop-status error">No se pudo cargar el catálogo: {dbError}</div>
+        )}
+
         <div className="shop-filters">
           <div className="filter-cats">
-            <button
-              className={`filter-btn ${!activeCat ? 'active' : ''}`}
-              onClick={() => setParams({})}
-            >Todos</button>
+            <button type="button" className={`filter-btn ${!activeCat ? 'active' : ''}`} onClick={() => setParams({})}>Todos</button>
             {categories.map(c => (
-              <button
-                key={c.id}
-                className={`filter-btn ${activeCat === c.slug ? 'active' : ''}`}
-                onClick={() => setParams({ cat: c.slug })}
-              >{c.name}</button>
+              <button key={c.id} type="button" className={`filter-btn ${activeCat === c.slug ? 'active' : ''}`}
+                onClick={() => setParams({ cat: c.slug })}>{c.name}</button>
             ))}
           </div>
-          <input
-            className="search-input"
-            placeholder="Buscar…"
-            value={search}
-            onChange={e => handleSearch(e.target.value)}
-          />
+          <input className="search-input" placeholder="Buscar…" value={search} onChange={e => handleSearch(e.target.value)}/>
         </div>
 
-        {filtered.length === 0 ? (
-          <div className="shop-empty">
-            <p>No hay productos que coincidan.</p>
-          </div>
+        {!loading && filtered.length === 0 ? (
+          <div className="shop-empty"><p>No hay productos que coincidan.</p></div>
         ) : (
           <div className="product-grid">
             {filtered.map((p, i) => (
               <div key={p.id} style={{ animationDelay: `${i * 60}ms` }}>
-                <ProductCard product={p} />
+                <ProductCard product={p}/>
               </div>
             ))}
           </div>
@@ -81,7 +78,7 @@ export default function StoreFront() {
       </main>
 
       <div className="shop-activity-wrap">
-        <RecentActivity variant="full" onSearch={applySearch} />
+        <RecentActivity variant="full" onSearch={applySearch}/>
       </div>
     </div>
   )
