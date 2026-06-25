@@ -22,7 +22,10 @@
   --transition: 180ms ease;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+}
 
 body {
   font-family: var(--font-body);
@@ -31,6 +34,38 @@ body {
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+}
+
+#root {
+  min-height: 100%;
+}
+
+.page-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  padding: 20px 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  background: var(--paper);
+}
+
+.site-footer a {
+  color: var(--muted);
+  text-decoration: underline;
 }
 
 a { color: inherit; text-decoration: none; }

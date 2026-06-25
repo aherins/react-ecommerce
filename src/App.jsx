@@ -9,7 +9,10 @@ import CheckoutPage from './pages/CheckoutPage'
 import WishlistPage from './pages/WishlistPage'
 import ContactPage from './pages/ContactPage'
 import TrackingPage from './pages/TrackingPage'
-import AuthPage from './pages/AuthPage'
+import StoreLayout from './components/StoreLayout'
+import RequireAccount from './pages/account/RequireAccount'
+import AccountLayout from './pages/account/AccountLayout'
+import AccountDashboard from './pages/account/AccountDashboard'
 import MyOrdersPage from './pages/MyOrdersPage'
 import AdminLayout, { RequirePermission } from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -29,17 +32,22 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* ── Tienda pública ─────────────────────────────────── */}
-            <Route path="/"                     element={<StoreFront />} />
-            <Route path="/producto/:id"         element={<ProductDetail />} />
-            <Route path="/carrito"              element={<CartPage />} />
-            <Route path="/checkout"             element={<CheckoutPage />} />
-            <Route path="/deseos"               element={<WishlistPage />} />
-            <Route path="/contacto"             element={<ContactPage />} />
-            <Route path="/seguimiento"          element={<TrackingPage />} />
-            <Route path="/seguimiento/:orderId" element={<TrackingPage />} />
-            <Route path="/cuenta"               element={<AuthPage />} />
-            <Route path="/cuenta/pedidos"       element={<MyOrdersPage />} />
+            <Route element={<StoreLayout />}>
+              <Route path="/"                     element={<StoreFront />} />
+              <Route path="/producto/:id"         element={<ProductDetail />} />
+              <Route path="/carrito"              element={<CartPage />} />
+              <Route path="/checkout"             element={<CheckoutPage />} />
+              <Route path="/deseos"               element={<WishlistPage />} />
+              <Route path="/contacto"             element={<ContactPage />} />
+              <Route path="/seguimiento"          element={<TrackingPage />} />
+              <Route path="/seguimiento/:orderId" element={<TrackingPage />} />
+              <Route path="/cuenta" element={<RequireAccount />}>
+                <Route element={<AccountLayout />}>
+                  <Route index element={<AccountDashboard />} />
+                  <Route path="pedidos" element={<MyOrdersPage />} />
+                </Route>
+              </Route>
+            </Route>
 
             {/* ── Admin ─────────────────────────────────────────── */}
             <Route path="/admin" element={<AdminLayout />}>

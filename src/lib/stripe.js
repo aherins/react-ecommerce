@@ -1,13 +1,35 @@
 import { loadStripe } from '@stripe/stripe-js'
 
-const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
+const rawKey = (import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '').trim()
 
-// stripePromise es null si no hay clave → se usa modo simulación
-export const stripePromise = key ? loadStripe(key) : null
-export const hasStripe = Boolean(key)
+/** Claves de ejemplo o incompletas → modo simulación */
+function isConfiguredStripeKey(key) {
+  if (!key) return false
+  if (/tu_clave|your_|placeholder|xxx|example|changeme/i.test(key)) return false
+  return /^pk_(test|live)_[a-zA-Z0-9]{14,}$/.test(key)
+}
+
+export const hasStripe = isConfiguredStripeKey(rawKey)
+export const stripePromise = hasStripe ? loadStripe(rawKey) : null
+
+/** Comprueba si el backend tiene STRIPE_SECRET_KEY configurada */
+export async function checkStripeBackend() {
+  if (!hasStripe) return false
+  try {
+    const res = await fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 100, currency: 'eur' }),
+    })
+    const data = await res.json()
+    if (data.error?.includes('STRIPE_SECRET_KEY')) return false
+    return res.ok && Boolean(data.clientSecret)
+  } catch {
+    return false
+  }
+}
 
 // ─── Modo Simulación ──────────────────────────────────────────────────────────
-// Simula el flujo completo: validación de tarjeta, éxito/fallo, delay visual
 
 export const MOCK_CARDS = [
   { number: '4242 4242 4242 4242', label: 'Visa — pago exitoso',   result: 'success' },

@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import Navbar from '../components/Navbar'
 import RecentActivity from '../components/RecentActivity'
 import ProductCard from '../components/ProductCard'
 import { useStore } from '../context/StoreContext'
@@ -33,8 +32,6 @@ export default function StoreFront() {
 
   return (
     <div className="storefront">
-      <Navbar />
-
       <section className="hero">
         <div className="hero-inner">
           <span className="hero-tag">Hecho a mano · Sevilla</span>
@@ -84,10 +81,6 @@ export default function StoreFront() {
       <div className="shop-activity-wrap">
         <RecentActivity variant="full" onSearch={applySearch} />
       </div>
-
-      <footer className="footer">
-        <p>© {new Date().getFullYear()} Artesana · <a href="/admin">Admin</a></p>
-      </footer>
     </div>
   )
 }

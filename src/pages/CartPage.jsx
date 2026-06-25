@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Trash2, Plus, Minus, ArrowLeft, CreditCard } from 'lucide-react'
-import Navbar from '../components/Navbar'
 import CouponInput from '../components/CouponInput'
 import { useStore } from '../context/StoreContext'
 import { canAddToCart } from '../context/store/stock'
@@ -17,8 +16,7 @@ export default function CartPage() {
   const finalTotal = applied?.finalTotal ?? cartTotal
 
   return (
-    <div>
-      <Navbar />
+    <>
       <main className="cart-main">
         <div className="cart-inner">
           <Link to="/" className="cart-back"><ArrowLeft size={16}/> Seguir comprando</Link>
@@ -86,7 +84,6 @@ export default function CartPage() {
           )}
         </div>
       </main>
-      <footer className="footer"><p>© {new Date().getFullYear()} Artesana</p></footer>
-    </div>
+    </>
   )
 }

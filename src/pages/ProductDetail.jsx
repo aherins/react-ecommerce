@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShoppingBag, Package } from 'lucide-react'
-import Navbar from '../components/Navbar'
 import RecentActivity from '../components/RecentActivity'
 import { activity } from '../lib/activity'
 import { useStore } from '../context/StoreContext'
@@ -15,10 +14,7 @@ export default function ProductDetail() {
 
   const product = products.find(p => p.id === id)
   if (!product) return (
-    <div>
-      <Navbar />
-      <div className="notfound"><p>Producto no encontrado. <Link to="/">Volver</Link></p></div>
-    </div>
+    <div className="notfound"><p>Producto no encontrado. <Link to="/">Volver</Link></p></div>
   )
 
   const category = categories.find(c => c.id === product.categoryId)
@@ -36,9 +32,7 @@ export default function ProductDetail() {
   }
 
   return (
-    <div>
-      <Navbar />
-      <main className="detail-main">
+    <main className="detail-main">
         <div className="detail-inner">
           <button className="detail-back" onClick={() => navigate(-1)}>
             <ArrowLeft size={16} /> Volver
@@ -77,6 +71,5 @@ export default function ProductDetail() {
           <RecentActivity variant="sidebar" excludeId={product.id} />
         </div>
       </main>
-    </div>
   )
 }

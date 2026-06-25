@@ -188,6 +188,16 @@
 }
 .checkout-empty p { color: var(--muted); margin-bottom: 20px; }
 
+.checkout-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 .btn-primary {
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--ink); color: var(--paper);

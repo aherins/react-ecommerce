@@ -101,16 +101,7 @@
   color: var(--muted);
 }
 
-/* Footer */
-.footer {
-  border-top: 1px solid var(--border);
-  padding: 20px 24px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.footer a { color: var(--muted); text-decoration: underline; }
+/* Footer — global en index.css (.site-footer) */
 
 .shop-activity-wrap {
   max-width: 1280px;

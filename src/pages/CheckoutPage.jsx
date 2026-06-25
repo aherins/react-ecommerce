@@ -1,13 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { ArrowLeft, CreditCard, Lock, CheckCircle, AlertCircle, Zap, Truck } from 'lucide-react'
-import Navbar from '../components/Navbar'
 import CouponInput from '../components/CouponInput'
 import { useStore } from '../context/StoreContext'
 import { useAuth } from '../context/AuthContext'
 import { validateCartStock } from '../context/store/stock'
-import { stripePromise, hasStripe, MOCK_CARDS, simulatePayment } from '../lib/stripe'
+import { stripePromise, hasStripe, checkStripeBackend, MOCK_CARDS, simulatePayment } from '../lib/stripe'
 import './CheckoutPage.css'
 
 // ─── Resumen lateral ──────────────────────────────────────────────────────────
@@ -179,6 +178,20 @@ export default function CheckoutPage() {
   const location   = useLocation()
   const [result,   setResult]  = useState(null)
   const [applied,  setApplied] = useState(location.state?.applied || null)
+  const [useSimulation, setUseSimulation] = useState(!hasStripe)
+  const [checkingStripe, setCheckingStripe] = useState(hasStripe)
+
+  useEffect(() => {
+    if (!hasStripe) return
+    let cancelled = false
+    checkStripeBackend().then(ok => {
+      if (!cancelled) {
+        setUseSimulation(!ok)
+        setCheckingStripe(false)
+      }
+    })
+    return () => { cancelled = true }
+  }, [])
 
   const items      = (cart||[]).map(i=>({...i,product:(products||[]).find(p=>p.id===i.productId)})).filter(i=>i.product)
   const discount   = applied?.discount   || 0
@@ -202,12 +215,10 @@ export default function CheckoutPage() {
     setResult(payment)
   }
 
-  if (result) return <div><Navbar/><SuccessScreen paymentId={result.id} simulated={result.simulated}/></div>
+  if (result) return <SuccessScreen paymentId={result.id} simulated={result.simulated}/>
 
   if (items.length === 0) return (
-    <div><Navbar/>
-      <div className="checkout-empty"><p>El carrito está vacío.</p><Link to="/" className="btn-primary">Ver productos</Link></div>
-    </div>
+    <div className="checkout-empty"><p>El carrito está vacío.</p><Link to="/" className="btn-primary">Ver productos</Link></div>
   )
 
   const formProps = {
@@ -220,21 +231,20 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div>
-      <Navbar/>
-      <main className="checkout-main">
-        <div className="checkout-inner">
+    <main className="checkout-main">
+      <div className="checkout-inner">
           <Link to="/carrito" className="checkout-back"><ArrowLeft size={16}/> Volver al carrito</Link>
           <h1 className="checkout-title">
             <CreditCard size={22}/>Pago
-            {!hasStripe && <span className="sim-pill"><Zap size={12}/>Simulación</span>}
+            {useSimulation && <span className="sim-pill"><Zap size={12}/>Simulación</span>}
           </h1>
-          {hasStripe
-            ? <Elements stripe={stripePromise}><RealStripeForm {...formProps}/></Elements>
-            : <SimulationForm {...formProps}/>
+          {checkingStripe ? (
+            <div className="checkout-loading"><span className="spinner"/>Preparando pago…</div>
+          ) : useSimulation
+            ? <SimulationForm {...formProps}/>
+            : <Elements stripe={stripePromise}><RealStripeForm {...formProps}/></Elements>
           }
         </div>
-      </main>
-    </div>
+    </main>
   )
 }

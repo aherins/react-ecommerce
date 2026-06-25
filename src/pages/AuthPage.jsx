@@ -1,10 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LogIn, UserPlus, LogOut, User, Package, Heart } from 'lucide-react'
-import Navbar from '../components/Navbar'
+import { LogIn, UserPlus } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { useStore } from '../context/StoreContext'
-import { ordersForUser, ORDER_STATUS_LABEL } from '../lib/orders'
 import './AuthPage.css'
 
 function GoogleIcon() {
@@ -32,14 +29,14 @@ function LoginForm({ onSwitch }) {
     const { error } = await signIn(email, password)
     setLoading(false)
     if (error) { setError(error.message); return }
-    navigate('/')
+    navigate('/cuenta')
   }
 
   async function handleGoogle() {
     setError(''); setLoadingG(true)
     const { error } = await signInWithGoogle()
     if (error) { setError(error.message); setLoadingG(false); return }
-    if (!hasSupabase) navigate('/')
+    if (!hasSupabase) navigate('/cuenta')
   }
 
   return (
@@ -90,7 +87,7 @@ function RegisterForm({ onSwitch }) {
     setError(''); setLoadingG(true)
     const { error } = await signInWithGoogle()
     if (error) { setError(error.message); setLoadingG(false); return }
-    if (!hasSupabase) navigate('/')
+    if (!hasSupabase) navigate('/cuenta')
   }
 
   if (success) return (
@@ -129,79 +126,17 @@ function RegisterForm({ onSwitch }) {
   )
 }
 
-function AccountPanel() {
-  const { user, signOut } = useAuth()
-  const { orders, wishlist } = useStore()
-  const navigate = useNavigate()
-  const name   = user?.user_metadata?.full_name || user?.email || 'Usuario'
-  const avatar = user?.user_metadata?.avatar_url
-  const myOrders = ordersForUser(orders, user)
-
-  return (
-    <div className="auth-form account-panel">
-      <div className="account-header">
-        {avatar
-          ? <img src={avatar} alt={name} className="account-avatar" referrerPolicy="no-referrer"/>
-          : <div className="account-avatar-placeholder"><User size={28}/></div>}
-        <div>
-          <h2>{name}</h2>
-          <p className="auth-sub">{user?.email}</p>
-        </div>
-      </div>
-
-      <div className="account-stats">
-        <div className="account-stat">
-          <Package size={20}/><span>{myOrders.length}</span><small>Pedidos</small>
-        </div>
-        <div className="account-stat">
-          <Heart size={20}/><span>{wishlist?.length || 0}</span><small>Deseos</small>
-        </div>
-      </div>
-
-      <button className="account-orders-btn" onClick={() => navigate('/cuenta/pedidos')}>
-        <Package size={16}/> Ver mis pedidos
-      </button>
-
-      {myOrders.length > 0 && (
-        <div className="account-orders">
-          <h3>Últimos pedidos</h3>
-          {myOrders.slice(0, 3).map(o => (
-            <div key={o.id} className="account-order-row" onClick={() => navigate('/cuenta/pedidos')}>
-              <div>
-                <p className="order-ref">#{o.id.slice(-8).toUpperCase()}</p>
-                <p className="order-date">{new Date(o.createdAt).toLocaleDateString('es-ES')}</p>
-              </div>
-              <div className="order-right">
-                <span className={`order-status-pill ${o.status}`}>{ORDER_STATUS_LABEL[o.status] || o.status}</span>
-                <span className="order-total">{o.total?.toFixed(2)} €</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <button className="signout-btn" onClick={signOut}><LogOut size={16}/>Cerrar sesión</button>
-    </div>
-  )
-}
-
-export default function AuthPage() {
-  const { user } = useAuth()
+export default function AuthForms() {
   const [mode, setMode] = useState('login')
 
   return (
-    <div>
-      <Navbar />
-      <main className="auth-main">
-        <div className="auth-container">
-          {user
-            ? <AccountPanel />
-            : mode === 'login'
-              ? <LoginForm onSwitch={() => setMode('register')} />
-              : <RegisterForm onSwitch={() => setMode('login')} />
-          }
-        </div>
-      </main>
-    </div>
+    <main className="auth-main">
+      <div className="auth-container">
+        {mode === 'login'
+          ? <LoginForm onSwitch={() => setMode('register')} />
+          : <RegisterForm onSwitch={() => setMode('login')} />
+        }
+      </div>
+    </main>
   )
 }

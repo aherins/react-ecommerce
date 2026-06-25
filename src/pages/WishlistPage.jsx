@@ -1,7 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Heart, ShoppingBag, Trash2 } from 'lucide-react'
-import Navbar from '../components/Navbar'
 import { useStore } from '../context/StoreContext'
 import './WishlistPage.css'
 
@@ -10,9 +9,7 @@ export default function WishlistPage() {
   const items = (wishlist || []).map(id => products.find(p => p.id === id)).filter(Boolean)
 
   return (
-    <div>
-      <Navbar />
-      <main className="wishlist-main">
+    <main className="wishlist-main">
         <div className="wishlist-inner">
           <div className="page-header">
             <Heart size={24} color="#e44d8a" fill="#e44d8a" />
@@ -60,6 +57,5 @@ export default function WishlistPage() {
           )}
         </div>
       </main>
-    </div>
   )
 }

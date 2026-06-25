@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Search, Truck, AlertCircle } from 'lucide-react'
-import Navbar from '../components/Navbar'
 import OrderCard from '../components/OrderCard'
 import { useStore } from '../context/StoreContext'
 import './TrackingPage.css'
@@ -28,9 +27,7 @@ export default function TrackingPage() {
   }
 
   return (
-    <div>
-      <Navbar/>
-      <main className="tracking-main">
+    <main className="tracking-main">
         <div className="tracking-inner">
           <div className="tracking-hero">
             <Truck size={28} color="var(--accent)"/>
@@ -68,7 +65,6 @@ export default function TrackingPage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
+    </main>
   )
 }

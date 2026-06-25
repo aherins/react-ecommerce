@@ -1,0 +1,119 @@
+.account-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 700px) {
+  .account-stats-grid { grid-template-columns: 1fr; }
+}
+
+.account-stat-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-stat-card svg { color: var(--muted); }
+
+.account-stat-card strong {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.account-stat-card span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.account-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.account-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.account-action-btn:hover { border-color: var(--ink); }
+
+.account-action-btn.primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.account-action-btn.primary:hover { background: var(--accent); border-color: var(--accent); }
+
+.account-recent {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.account-recent h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.account-recent-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+
+.account-recent-row:last-child { border-bottom: none; }
+
+.account-recent-row:hover { opacity: 0.75; }
+
+.account-recent-ref { font-size: 13px; font-weight: 600; }
+.account-recent-date { font-size: 12px; color: var(--muted); }
+.account-recent-right { display: flex; align-items: center; gap: 12px; }
+.account-recent-total { font-size: 13px; font-weight: 600; }
+
+.account-recent-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.account-recent-empty p { margin-bottom: 16px; }
+
+.order-status-pill {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 99px;
+}
+.order-status-pill.pending    { background: #fef9c3; color: #92400e; }
+.order-status-pill.processing { background: #dbeafe; color: #1d4ed8; }
+.order-status-pill.shipped    { background: #e0f2fe; color: #0369a1; }
+.order-status-pill.delivered  { background: #dcfce7; color: #166534; }
+.order-status-pill.cancelled  { background: #fee2e2; color: #991b1b; }

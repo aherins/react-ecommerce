@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Mail, Phone, MapPin, Clock, CheckCircle, Send, MessageSquare, HelpCircle } from 'lucide-react'
-import Navbar from '../components/Navbar'
 import './ContactPage.css'
 
 const FAQS = [
@@ -27,9 +26,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div>
-      <Navbar />
-      <main className="contact-main">
+    <main className="contact-main">
 
         {/* Hero */}
         <section className="contact-hero">
@@ -125,6 +122,5 @@ export default function ContactPage() {
 
         </div>
       </main>
-    </div>
   )
 }
