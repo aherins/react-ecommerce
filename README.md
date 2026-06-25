@@ -154,7 +154,12 @@ create policy "orders_update_authenticated" on orders for update
   with check (auth.role() = 'authenticated');
 
 alter publication supabase_realtime add table orders;
+
+-- Roles del panel admin (ver supabase/user_roles_rls.sql para políticas RLS)
+-- create table if not exists public.user_roles ( ... );
 ```
+
+Si `/admin/usuarios` sale vacío con usuarios en la BBDD, ejecuta `supabase/user_roles_rls.sql` y configura `SUPABASE_SERVICE_ROLE_KEY` en Vercel.
 
 ---
 

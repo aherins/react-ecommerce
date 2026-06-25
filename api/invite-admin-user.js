@@ -1,4 +1,4 @@
-// Crea usuarios del panel admin con service role (nunca expuesta al cliente)
+import { adminHeaders, getSupabaseConfig, verifySuperadmin } from './supabaseAdmin.js'
 
 export const config = { runtime: 'edge' }
 
@@ -14,11 +14,7 @@ function json(data, status = 200) {
 export default async function handler(req) {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
 
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  const supabaseUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '')
-    .replace(/\/(rest\/v1\/?|auth\/v1\/?)$/, '')
-    .replace(/\/$/, '')
-
+  const { serviceKey, supabaseUrl } = getSupabaseConfig()
   if (!serviceKey || !supabaseUrl) {
     return json({
       error: 'Falta SUPABASE_SERVICE_ROLE_KEY o SUPABASE_URL en el servidor (Vercel → Environment Variables).',
@@ -26,7 +22,8 @@ export default async function handler(req) {
   }
 
   const token = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '')
-  if (!token) return json({ error: 'Sesión no válida.' }, 401)
+  const auth = await verifySuperadmin(token, supabaseUrl, serviceKey)
+  if (!auth.ok) return json({ error: auth.error }, auth.status)
 
   let body
   try {
@@ -44,29 +41,7 @@ export default async function handler(req) {
   if (!VALID_ROLES.includes(role)) return json({ error: 'Rol no válido.' }, 400)
   if (password.length < 8) return json({ error: 'La contraseña debe tener al menos 8 caracteres.' }, 400)
 
-  const headers = {
-    apikey: serviceKey,
-    Authorization: `Bearer ${serviceKey}`,
-    'Content-Type': 'application/json',
-  }
-
-  // Verificar que quien llama es superadmin
-  const meRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
-    headers: { apikey: serviceKey, Authorization: `Bearer ${token}` },
-  })
-  const me = await meRes.json()
-  if (!meRes.ok || !me?.id) {
-    return json({ error: 'Sesión expirada. Vuelve a iniciar sesión.' }, 401)
-  }
-
-  const roleRes = await fetch(
-    `${supabaseUrl}/rest/v1/user_roles?user_id=eq.${me.id}&select=role`,
-    { headers: { ...headers, Accept: 'application/vnd.pgrst.object+json' } },
-  )
-  const callerRole = roleRes.ok ? await roleRes.json() : null
-  if (callerRole?.role !== 'superadmin') {
-    return json({ error: 'Solo un superadmin puede crear usuarios.' }, 403)
-  }
+  const headers = adminHeaders(serviceKey)
 
   // Crear usuario en Auth (confirmado, sin email de invitación)
   const createRes = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {

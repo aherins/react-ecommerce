@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Plus, Trash2, X, Check, Shield, Mail, User, KeyRound } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase, hasSupabase } from '../../lib/supabase'
-import { createAdminUser } from '../../lib/adminUsersApi'
+import { createAdminUser, fetchAdminUsers } from '../../lib/adminUsersApi'
 import { ROLES, ROLE_LABELS, ROLE_COLORS, DEMO_USERS } from '../../lib/roles'
 import Portal from '../../components/Portal'
 import '../admin/AdminTable.css'
@@ -22,6 +22,7 @@ export default function AdminUsers() {
   const [delId,   setDelId]   = useState(null)
   const [saving,  setSaving]  = useState(false)
   const [error,   setError]   = useState('')
+  const [loadError, setLoadError] = useState('')
 
   // Form state
   const [email,    setEmail]    = useState('')
@@ -31,10 +32,35 @@ export default function AdminUsers() {
 
   useEffect(() => { loadUsers() }, [])
 
+  async function loadUsersFromClient() {
+    const { data: roles, error: rolesErr } = await supabase
+      .from('user_roles')
+      .select('user_id, role, created_at')
+      .order('created_at', { ascending: false })
+
+    if (rolesErr) throw rolesErr
+    if (!roles?.length) return []
+
+    const ids = roles.map(r => r.user_id)
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, email, full_name')
+      .in('id', ids)
+
+    const profileById = Object.fromEntries((profiles || []).map(p => [p.id, p]))
+    return roles.map(r => ({
+      id: r.user_id,
+      role: r.role,
+      email: profileById[r.user_id]?.email || '—',
+      name: profileById[r.user_id]?.full_name || '',
+      created_at: r.created_at,
+    }))
+  }
+
   async function loadUsers() {
     setLoading(true)
+    setLoadError('')
     if (!hasSupabase) {
-      // Demo: mostrar los usuarios demo con sus roles
       setUsers(DEMO_USERS.map(u => ({
         id: u.id, email: u.email, role: u.role,
         name: u.name, created_at: new Date().toISOString(),
@@ -42,19 +68,24 @@ export default function AdminUsers() {
       setLoading(false)
       return
     }
-    // En Supabase: join entre auth.users y user_roles
-    // Necesita una Edge Function o una vista — aquí usamos user_roles directamente
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('user_id, role, created_at, profiles(email, full_name)')
-      .order('created_at', { ascending: false })
-    if (!error && data) {
-      setUsers(data.map(r => ({
-        id: r.user_id, role: r.role,
-        email: r.profiles?.email || '—',
-        name: r.profiles?.full_name || '',
-        created_at: r.created_at,
-      })))
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.access_token) {
+        try {
+          const users = await fetchAdminUsers(session.access_token)
+          setUsers(users)
+          setLoading(false)
+          return
+        } catch (apiErr) {
+          // Sin API en local o sin service role: intentar lectura directa
+          console.warn('list-admin-users:', apiErr.message)
+        }
+      }
+      setUsers(await loadUsersFromClient())
+    } catch (err) {
+      setUsers([])
+      setLoadError(err.message || 'No se pudieron cargar los usuarios.')
     }
     setLoading(false)
   }
@@ -133,6 +164,8 @@ export default function AdminUsers() {
           <button className="btn-add" onClick={openInvite}><Plus size={16}/>Nuevo usuario</button>
         )}
       </div>
+
+      {loadError && <p className="form-error users-load-error">{loadError}</p>}
 
       {/* Role legend */}
       <div className="roles-legend">

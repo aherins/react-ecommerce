@@ -1,3 +1,20 @@
+async function parseJson(res) {
+  try {
+    return await res.json()
+  } catch {
+    return {}
+  }
+}
+
+export async function fetchAdminUsers(accessToken) {
+  const res = await fetch('/api/list-admin-users', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  const data = await parseJson(res)
+  if (!res.ok) throw new Error(data.error || 'No se pudieron cargar los usuarios.')
+  return data.users || []
+}
+
 export async function createAdminUser({ email, password, role, name, accessToken }) {
   const res = await fetch('/api/invite-admin-user', {
     method: 'POST',
@@ -8,16 +25,7 @@ export async function createAdminUser({ email, password, role, name, accessToken
     body: JSON.stringify({ email, password, role, name }),
   })
 
-  let data = {}
-  try {
-    data = await res.json()
-  } catch {
-    data = {}
-  }
-
-  if (!res.ok) {
-    throw new Error(data.error || 'No se pudo crear el usuario.')
-  }
-
+  const data = await parseJson(res)
+  if (!res.ok) throw new Error(data.error || 'No se pudo crear el usuario.')
   return data
 }

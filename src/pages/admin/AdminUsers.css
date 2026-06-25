@@ -57,6 +57,8 @@
   background: #fee2e2; padding: 8px 12px; border-radius: var(--radius);
 }
 
+.users-load-error { margin-bottom: 16px; }
+
 .form-hint {
   font-size: 12px;
   color: var(--muted);
