@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, X, Check, Shield, Mail } from 'lucide-react'
+import { Plus, Trash2, X, Check, Shield, Mail, User, KeyRound } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase, hasSupabase } from '../../lib/supabase'
+import { createAdminUser } from '../../lib/adminUsersApi'
 import { ROLES, ROLE_LABELS, ROLE_COLORS, DEMO_USERS } from '../../lib/roles'
 import Portal from '../../components/Portal'
 import '../admin/AdminTable.css'
@@ -13,7 +14,8 @@ function RoleBadge({ role }) {
 }
 
 export default function AdminUsers() {
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, userCan } = useAuth()
+  const canCreate = userCan('usuarios.crear')
   const [users,   setUsers]   = useState([])
   const [loading, setLoading] = useState(true)
   const [modal,   setModal]   = useState(null)   // null | { mode: 'invite'|'edit', user? }
@@ -23,6 +25,8 @@ export default function AdminUsers() {
 
   // Form state
   const [email,    setEmail]    = useState('')
+  const [name,     setName]     = useState('')
+  const [password, setPassword] = useState('')
   const [selRole,  setSelRole]  = useState('viewer')
 
   useEffect(() => { loadUsers() }, [])
@@ -56,7 +60,7 @@ export default function AdminUsers() {
   }
 
   function openInvite() {
-    setEmail(''); setSelRole('viewer'); setError('')
+    setEmail(''); setName(''); setPassword(''); setSelRole('viewer'); setError('')
     setModal({ mode: 'invite' })
   }
 
@@ -67,19 +71,32 @@ export default function AdminUsers() {
 
   async function handleInvite() {
     if (!email.trim()) { setError('Introduce un email.'); return }
+    if (password.length < 8) { setError('La contraseña debe tener al menos 8 caracteres.'); return }
     setSaving(true); setError('')
     if (!hasSupabase) {
-      // Demo: simular
-      setUsers(prev => [...prev, { id: `demo-${Date.now()}`, email, role: selRole, name: '', created_at: new Date().toISOString() }])
+      setUsers(prev => [...prev, {
+        id: `demo-${Date.now()}`, email, role: selRole,
+        name: name.trim() || email.split('@')[0],
+        created_at: new Date().toISOString(),
+      }])
       setModal(null); setSaving(false); return
     }
-    // 1. Invitar al usuario via Supabase Auth
-    const { data, error: invErr } = await supabase.auth.admin.inviteUserByEmail(email)
-    if (invErr) { setError(invErr.message); setSaving(false); return }
-    // 2. Asignar rol
-    await supabase.from('user_roles').upsert({ user_id: data.user.id, role: selRole }, { onConflict: 'user_id' })
-    await loadUsers()
-    setModal(null); setSaving(false)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('Sesión expirada. Vuelve a iniciar sesión.')
+      await createAdminUser({
+        email: email.trim(),
+        password,
+        role: selRole,
+        name: name.trim(),
+        accessToken: session.access_token,
+      })
+      await loadUsers()
+      setModal(null)
+    } catch (err) {
+      setError(err.message || 'No se pudo crear el usuario.')
+    }
+    setSaving(false)
   }
 
   async function handleEditRole() {
@@ -112,7 +129,9 @@ export default function AdminUsers() {
           <h1 className="page-title">Usuarios y roles</h1>
           <p className="page-sub">{users.length} usuarios con acceso al panel</p>
         </div>
-        <button className="btn-add" onClick={openInvite}><Plus size={16}/>Invitar usuario</button>
+        {canCreate && (
+          <button className="btn-add" onClick={openInvite}><Plus size={16}/>Nuevo usuario</button>
+        )}
       </div>
 
       {/* Role legend */}
@@ -147,14 +166,18 @@ export default function AdminUsers() {
                 <td style={{fontSize:13,color:'var(--muted)'}}>{new Date(u.created_at).toLocaleDateString('es-ES')}</td>
                 <td>
                   <div className="row-actions">
-                    <button className="action-btn edit" onClick={() => openEdit(u)} title="Cambiar rol"
-                      disabled={u.id === currentUser?.id}>
-                      <Shield size={14}/>
-                    </button>
-                    <button className="action-btn del" onClick={() => setDelId(u.id)} title="Eliminar acceso"
-                      disabled={u.id === currentUser?.id}>
-                      <Trash2 size={14}/>
-                    </button>
+                    {canCreate && (
+                      <button className="action-btn edit" onClick={() => openEdit(u)} title="Cambiar rol"
+                        disabled={u.id === currentUser?.id}>
+                        <Shield size={14}/>
+                      </button>
+                    )}
+                    {canCreate && (
+                      <button className="action-btn del" onClick={() => setDelId(u.id)} title="Eliminar acceso"
+                        disabled={u.id === currentUser?.id}>
+                        <Trash2 size={14}/>
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -168,15 +191,27 @@ export default function AdminUsers() {
         <Portal><div className="modal-overlay" onClick={e => e.target === e.currentTarget && setModal(null)}>
           <div className="modal modal-sm">
             <div className="modal-header">
-              <h2>{modal.mode === 'invite' ? 'Invitar usuario' : 'Cambiar rol'}</h2>
+              <h2>{modal.mode === 'invite' ? 'Nuevo usuario' : 'Cambiar rol'}</h2>
               <button onClick={() => setModal(null)}><X size={20}/></button>
             </div>
             <div className="modal-body">
               {modal.mode === 'invite' && (
-                <div className="form-row">
-                  <label><Mail size={13}/> Email</label>
-                  <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="usuario@email.com"/>
-                </div>
+                <>
+                  <div className="form-row">
+                    <label><Mail size={13}/> Email</label>
+                    <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="viewer@artesana.es"/>
+                  </div>
+                  <div className="form-row">
+                    <label><User size={13}/> Nombre</label>
+                    <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="Visualizador"/>
+                  </div>
+                  <div className="form-row">
+                    <label><KeyRound size={13}/> Contraseña inicial</label>
+                    <input type="password" value={password} onChange={e=>setPassword(e.target.value)}
+                      placeholder="Mínimo 8 caracteres" autoComplete="new-password"/>
+                  </div>
+                  <p className="form-hint">Se crea la cuenta en Supabase con el rol elegido. Comparte la contraseña con el usuario.</p>
+                </>
               )}
               {modal.mode === 'edit' && (
                 <div className="current-user-info">
@@ -210,7 +245,7 @@ export default function AdminUsers() {
             <div className="modal-footer">
               <button className="btn-cancel" onClick={() => setModal(null)}>Cancelar</button>
               <button className="btn-save" onClick={modal.mode==='invite' ? handleInvite : handleEditRole} disabled={saving}>
-                {saving ? <span className="spinner"/> : <><Check size={15}/>{modal.mode==='invite' ? 'Enviar invitación' : 'Guardar cambios'}</>}
+                {saving ? <span className="spinner"/> : <><Check size={15}/>{modal.mode==='invite' ? 'Crear usuario' : 'Guardar cambios'}</>}
               </button>
             </div>
           </div>

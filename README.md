@@ -59,6 +59,8 @@ Copia `.env.example` a `.env.local` y rellena las que tengas:
 ```
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
+SUPABASE_URL=                   ← mismo valor que VITE_SUPABASE_URL (solo servidor)
+SUPABASE_SERVICE_ROLE_KEY=      ← solo en Vercel; crea usuarios desde /admin/usuarios
 VITE_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=              ← solo en Vercel (no exponer al cliente)
 VITE_CLOUDINARY_CLOUD_NAME=
@@ -77,6 +79,8 @@ vercel
 ```
 
 O conecta el repositorio en [vercel.com](https://vercel.com) y añade las variables de entorno en **Settings → Environment Variables**.
+
+**Crear usuarios del panel:** entra como superadmin → `/admin/usuarios` → **Nuevo usuario**. Requiere `SUPABASE_SERVICE_ROLE_KEY` en Vercel (Settings → API → `service_role`). En local usa `npx vercel dev` para que funcione `/api/invite-admin-user`.
 
 - Build: `npm run build`
 - Output: `dist`
