@@ -1,0 +1,3 @@
+export const CART_ACTIONS = new Set([
+  'CART_ADD', 'CART_REMOVE', 'CART_SET_QTY', 'CART_CLEAR', 'SET_CART', 'WISHLIST_TOGGLE',
+])

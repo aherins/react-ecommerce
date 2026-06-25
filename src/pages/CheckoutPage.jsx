@@ -5,6 +5,8 @@ import { ArrowLeft, CreditCard, Lock, CheckCircle, AlertCircle, Zap, Truck } fro
 import Navbar from '../components/Navbar'
 import CouponInput from '../components/CouponInput'
 import { useStore } from '../context/StoreContext'
+import { useAuth } from '../context/AuthContext'
+import { validateCartStock } from '../context/store/stock'
 import { stripePromise, hasStripe, MOCK_CARDS, simulatePayment } from '../lib/stripe'
 import './CheckoutPage.css'
 
@@ -62,7 +64,7 @@ function SuccessScreen({ paymentId, simulated }) {
 }
 
 // ─── Formulario simulación ────────────────────────────────────────────────────
-function SimulationForm({ items, finalTotal, applied, onApply, onRemove, onSuccess }) {
+function SimulationForm({ items, finalTotal, applied, onApply, onRemove, onSuccess, cart, products }) {
   const { dispatch } = useStore()
   const [card,    setCard]    = useState(MOCK_CARDS[0].number)
   const [name,    setName]    = useState('')
@@ -71,6 +73,8 @@ function SimulationForm({ items, finalTotal, applied, onApply, onRemove, onSucce
 
   async function handlePay() {
     if (!name.trim()) { setError('Introduce el nombre del titular.'); return }
+    const stockError = validateCartStock(cart, products)
+    if (stockError) { setError(stockError); return }
     setError(''); setLoading(true)
     try {
       const result = await simulatePayment({ card })
@@ -112,7 +116,7 @@ function SimulationForm({ items, finalTotal, applied, onApply, onRemove, onSucce
 }
 
 // ─── Formulario Stripe real ───────────────────────────────────────────────────
-function RealStripeForm({ items, finalTotal, applied, onApply, onRemove, onSuccess }) {
+function RealStripeForm({ items, finalTotal, applied, onApply, onRemove, onSuccess, cart, products }) {
   const stripe   = useStripe()
   const elements = useElements()
   const { dispatch } = useStore()
@@ -123,6 +127,8 @@ function RealStripeForm({ items, finalTotal, applied, onApply, onRemove, onSucce
   async function handlePay() {
     if (!stripe || !elements) return
     if (!name.trim()) { setError('Introduce el nombre del titular.'); return }
+    const stockError = validateCartStock(cart, products)
+    if (stockError) { setError(stockError); return }
     setError(''); setLoading(true)
     try {
       const res = await fetch('/api/create-payment-intent', {
@@ -168,6 +174,7 @@ function RealStripeForm({ items, finalTotal, applied, onApply, onRemove, onSucce
 // ─── Página ───────────────────────────────────────────────────────────────────
 export default function CheckoutPage() {
   const { cart, products, cartTotal, dispatch } = useStore()
+  const { user } = useAuth()
   const navigate   = useNavigate()
   const location   = useLocation()
   const [result,   setResult]  = useState(null)
@@ -180,6 +187,8 @@ export default function CheckoutPage() {
   function handleSuccess(payment) {
     const order = {
       id: payment.id, paymentId: payment.id,
+      userId: user?.id || null,
+      email: user?.email || null,
       createdAt: new Date().toISOString(),
       status: 'pending',
       total: finalTotal, subtotal: cartTotal, discount,
@@ -201,7 +210,14 @@ export default function CheckoutPage() {
     </div>
   )
 
-  const formProps = { items, finalTotal, applied, onApply: setApplied, onRemove: () => setApplied(null), onSuccess: handleSuccess }
+  const formProps = {
+    items, finalTotal, applied,
+    onApply: setApplied,
+    onRemove: () => setApplied(null),
+    onSuccess: handleSuccess,
+    cart,
+    products,
+  }
 
   return (
     <div>

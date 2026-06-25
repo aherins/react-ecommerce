@@ -1,0 +1,74 @@
+.tracking-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+}
+
+.tracking-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.tracking-ref { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.tracking-date { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+.status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 99px;
+}
+.status-badge.pending    { background: #fef9c3; color: #92400e; }
+.status-badge.processing { background: #dbeafe; color: #1d4ed8; }
+.status-badge.shipped    { background: #e0f2fe; color: #0369a1; }
+.status-badge.delivered  { background: #dcfce7; color: #166534; }
+.status-badge.cancelled  { background: #fee2e2; color: #991b1b; }
+
+.timeline { margin-bottom: 24px; }
+.timeline-step { display: flex; gap: 16px; }
+.tl-left { display: flex; flex-direction: column; align-items: center; width: 36px; flex-shrink: 0; }
+.tl-dot {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--cream); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center; color: var(--muted);
+  flex-shrink: 0; z-index: 1;
+}
+.timeline-step.done .tl-dot   { background: #dcfce7; border-color: var(--success); color: var(--success); }
+.timeline-step.current .tl-dot { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tl-line { flex: 1; width: 2px; background: var(--border); margin: 4px 0; min-height: 24px; }
+.timeline-step.done .tl-line { background: var(--success); }
+.tl-content { padding: 6px 0 20px; }
+.tl-label { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.timeline-step:not(.done):not(.current) .tl-label { color: var(--muted); }
+.tl-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+.tracking-cancelled {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--danger); background: #fee2e2;
+  padding: 12px 16px; border-radius: var(--radius); margin-bottom: 20px; font-size: 14px;
+}
+
+.tracking-number-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--muted);
+  background: var(--cream); padding: 10px 14px;
+  border-radius: var(--radius); margin-bottom: 20px;
+}
+
+.tracking-items { border-top: 1px solid var(--border); padding-top: 16px; margin-bottom: 12px; }
+.tracking-items h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.tracking-item { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+.tracking-item img { width: 44px; height: 44px; border-radius: var(--radius); object-fit: cover; flex-shrink: 0; }
+.tracking-item p { font-size: 13px; font-weight: 500; }
+.tracking-item-qty { color: var(--muted); font-weight: 400; }
+
+.tracking-total {
+  display: flex; justify-content: space-between;
+  font-size: 15px; font-weight: 600;
+  border-top: 1px solid var(--border); padding-top: 12px;
+}

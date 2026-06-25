@@ -41,6 +41,7 @@
 .cart-item-info { flex: 1; }
 .cart-item-name { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
 .cart-item-unit { font-size: 13px; color: var(--muted); }
+.cart-item-stock { font-size: 12px; color: var(--danger); margin-top: 4px; }
 
 .cart-item-qty {
   display: flex; align-items: center; gap: 8px;

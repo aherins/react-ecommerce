@@ -22,14 +22,12 @@ export default function AdminOrders() {
   })
 
   function updateStatus(orderId, status) {
-    const updated = orders.map(o => o.id === orderId ? { ...o, status } : o)
-    dispatch({ type: 'SET_ORDERS', orders: updated })
+    dispatch({ type: 'ORDER_UPDATE', id: orderId, patch: { status } })
     if (selected?.id === orderId) setSelected(s => ({ ...s, status }))
   }
 
   function addTracking(orderId, trackingNumber) {
-    const updated = orders.map(o => o.id === orderId ? { ...o, trackingNumber } : o)
-    dispatch({ type: 'SET_ORDERS', orders: updated })
+    dispatch({ type: 'ORDER_UPDATE', id: orderId, patch: { trackingNumber } })
     if (selected?.id === orderId) setSelected(s => ({ ...s, trackingNumber }))
   }
 

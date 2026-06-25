@@ -10,6 +10,7 @@ import WishlistPage from './pages/WishlistPage'
 import ContactPage from './pages/ContactPage'
 import TrackingPage from './pages/TrackingPage'
 import AuthPage from './pages/AuthPage'
+import MyOrdersPage from './pages/MyOrdersPage'
 import AdminLayout, { RequirePermission } from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminProducts from './pages/admin/AdminProducts'
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="/seguimiento"          element={<TrackingPage />} />
             <Route path="/seguimiento/:orderId" element={<TrackingPage />} />
             <Route path="/cuenta"               element={<AuthPage />} />
+            <Route path="/cuenta/pedidos"       element={<MyOrdersPage />} />
 
             {/* ── Admin ─────────────────────────────────────────── */}
             <Route path="/admin" element={<AdminLayout />}>

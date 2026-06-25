@@ -5,11 +5,12 @@ import Navbar from '../components/Navbar'
 import RecentActivity from '../components/RecentActivity'
 import { activity } from '../lib/activity'
 import { useStore } from '../context/StoreContext'
+import { canAddToCart } from '../context/store/stock'
 import './ProductDetail.css'
 
 export default function ProductDetail() {
   const { id } = useParams()
-  const { products, categories, dispatch } = useStore()
+  const { products, categories, dispatch, cart } = useStore()
   const navigate = useNavigate()
 
   const product = products.find(p => p.id === id)
@@ -21,6 +22,7 @@ export default function ProductDetail() {
   )
 
   const category = categories.find(c => c.id === product.categoryId)
+  const canAdd = canAddToCart(product, cart)
 
   // Registrar visita al producto
   useEffect(() => {
@@ -28,6 +30,7 @@ export default function ProductDetail() {
   }, [product?.id])
 
   function handleAdd() {
+    if (!canAdd) return
     dispatch({ type: 'CART_ADD', productId: product.id })
     navigate('/carrito')
   }
@@ -60,10 +63,10 @@ export default function ProductDetail() {
               <button
                 className="detail-add"
                 onClick={handleAdd}
-                disabled={product.stock === 0}
+                disabled={!canAdd}
               >
                 <ShoppingBag size={18} />
-                {product.stock > 0 ? 'Añadir al carrito' : 'Sin stock'}
+                {canAdd ? 'Añadir al carrito' : 'Sin stock'}
               </button>
             </div>
           </div>

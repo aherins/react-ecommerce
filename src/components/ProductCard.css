@@ -50,6 +50,15 @@
   background: var(--accent);
 }
 
+.product-card-cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.product-card-cta:disabled:hover {
+  background: var(--ink);
+}
+
 .product-card-info {
   padding: 12px 4px 0;
 }

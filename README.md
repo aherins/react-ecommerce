@@ -112,6 +112,34 @@ create policy "Lectura pública" on products   for select using (true);
 create policy "Lectura pública" on categories for select using (true);
 create policy "Solo admin"      on products   for all using (auth.role() = 'authenticated');
 create policy "Solo admin"      on categories for all using (auth.role() = 'authenticated');
+
+-- Pedidos (checkout + panel admin + /cuenta/pedidos)
+-- También disponible en: supabase/orders.sql
+create table if not exists orders (
+  id text primary key,
+  payment_id text,
+  user_id text,
+  created_at timestamptz default now(),
+  status text default 'pending',
+  total numeric not null,
+  subtotal numeric,
+  discount numeric default 0,
+  coupon_code text,
+  items jsonb not null default '[]',
+  email text,
+  tracking_number text,
+  simulated boolean default false
+);
+
+alter table orders enable row level security;
+
+create policy "orders_select_public" on orders for select using (true);
+create policy "orders_insert_public" on orders for insert with check (true);
+create policy "orders_update_authenticated" on orders for update
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+alter publication supabase_realtime add table orders;
 ```
 
 ---

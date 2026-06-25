@@ -14,16 +14,13 @@ export default function AdminShipping() {
   const delivered= orders.filter(o => o.status === 'delivered')
 
   function markShipped(orderId) {
-    const updated = orders.map(o => o.id === orderId ? { ...o, status: 'shipped' } : o)
-    dispatch({ type: 'SET_ORDERS', orders: updated })
+    dispatch({ type: 'ORDER_UPDATE', id: orderId, patch: { status: 'shipped' } })
   }
   function markDelivered(orderId) {
-    const updated = orders.map(o => o.id === orderId ? { ...o, status: 'delivered' } : o)
-    dispatch({ type: 'SET_ORDERS', orders: updated })
+    dispatch({ type: 'ORDER_UPDATE', id: orderId, patch: { status: 'delivered' } })
   }
   function saveTracking(orderId, tn) {
-    const updated = orders.map(o => o.id === orderId ? { ...o, trackingNumber: tn } : o)
-    dispatch({ type: 'SET_ORDERS', orders: updated })
+    dispatch({ type: 'ORDER_UPDATE', id: orderId, patch: { trackingNumber: tn } })
   }
 
   return (

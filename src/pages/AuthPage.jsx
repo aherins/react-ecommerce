@@ -4,6 +4,7 @@ import { LogIn, UserPlus, LogOut, User, Package, Heart } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import { useAuth } from '../context/AuthContext'
 import { useStore } from '../context/StoreContext'
+import { ordersForUser, ORDER_STATUS_LABEL } from '../lib/orders'
 import './AuthPage.css'
 
 function GoogleIcon() {
@@ -130,10 +131,11 @@ function RegisterForm({ onSwitch }) {
 
 function AccountPanel() {
   const { user, signOut } = useAuth()
-  const { orders, wishlist, products } = useStore()
+  const { orders, wishlist } = useStore()
   const navigate = useNavigate()
   const name   = user?.user_metadata?.full_name || user?.email || 'Usuario'
   const avatar = user?.user_metadata?.avatar_url
+  const myOrders = ordersForUser(orders, user)
 
   return (
     <div className="auth-form account-panel">
@@ -149,29 +151,32 @@ function AccountPanel() {
 
       <div className="account-stats">
         <div className="account-stat">
-          <Package size={20}/><span>{orders.length}</span><small>Pedidos</small>
+          <Package size={20}/><span>{myOrders.length}</span><small>Pedidos</small>
         </div>
         <div className="account-stat">
           <Heart size={20}/><span>{wishlist?.length || 0}</span><small>Deseos</small>
         </div>
       </div>
 
-      {orders.length > 0 && (
+      <button className="account-orders-btn" onClick={() => navigate('/cuenta/pedidos')}>
+        <Package size={16}/> Ver mis pedidos
+      </button>
+
+      {myOrders.length > 0 && (
         <div className="account-orders">
           <h3>Últimos pedidos</h3>
-          {orders.slice(0, 3).map(o => (
-            <div key={o.id} className="account-order-row" onClick={() => navigate(`/seguimiento/${o.id}`)}>
+          {myOrders.slice(0, 3).map(o => (
+            <div key={o.id} className="account-order-row" onClick={() => navigate('/cuenta/pedidos')}>
               <div>
                 <p className="order-ref">#{o.id.slice(-8).toUpperCase()}</p>
                 <p className="order-date">{new Date(o.createdAt).toLocaleDateString('es-ES')}</p>
               </div>
               <div className="order-right">
-                <span className={`order-status-pill ${o.status}`}>{STATUS_LABEL[o.status] || o.status}</span>
+                <span className={`order-status-pill ${o.status}`}>{ORDER_STATUS_LABEL[o.status] || o.status}</span>
                 <span className="order-total">{o.total?.toFixed(2)} €</span>
               </div>
             </div>
           ))}
-          <button className="link-btn" onClick={() => navigate('/seguimiento')}>Ver todos →</button>
         </div>
       )}
 
@@ -179,8 +184,6 @@ function AccountPanel() {
     </div>
   )
 }
-
-const STATUS_LABEL = { pending:'Pendiente', processing:'Procesando', shipped:'Enviado', delivered:'Entregado', cancelled:'Cancelado' }
 
 export default function AuthPage() {
   const { user } = useAuth()

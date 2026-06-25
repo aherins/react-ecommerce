@@ -4,6 +4,7 @@ import { Trash2, Plus, Minus, ArrowLeft, CreditCard } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import CouponInput from '../components/CouponInput'
 import { useStore } from '../context/StoreContext'
+import { canAddToCart } from '../context/store/stock'
 import './CartPage.css'
 
 export default function CartPage() {
@@ -31,22 +32,30 @@ export default function CartPage() {
           ) : (
             <div className="cart-layout">
               <div className="cart-items">
-                {items.map(({ product, qty, productId }) => (
+                {items.map(({ product, qty, productId }) => {
+                  const canIncrease = canAddToCart(product, cart)
+                  return (
                   <div key={productId} className="cart-item">
                     <div className="cart-item-img"><img src={product.image} alt={product.name}/></div>
                     <div className="cart-item-info">
                       <p className="cart-item-name">{product.name}</p>
                       <p className="cart-item-unit">{product.price.toFixed(2)} € / ud</p>
+                      {qty >= product.stock && (
+                        <p className="cart-item-stock">Stock máximo: {product.stock}</p>
+                      )}
                     </div>
                     <div className="cart-item-qty">
                       <button onClick={() => dispatch({ type:'CART_SET_QTY', productId, qty: qty-1 })}><Minus size={14}/></button>
                       <span>{qty}</span>
-                      <button onClick={() => dispatch({ type:'CART_SET_QTY', productId, qty: qty+1 })}><Plus size={14}/></button>
+                      <button
+                        onClick={() => dispatch({ type:'CART_SET_QTY', productId, qty: qty+1 })}
+                        disabled={!canIncrease}
+                      ><Plus size={14}/></button>
                     </div>
                     <p className="cart-item-subtotal">{(product.price * qty).toFixed(2)} €</p>
                     <button className="cart-item-del" onClick={() => dispatch({ type:'CART_REMOVE', productId })}><Trash2 size={16}/></button>
                   </div>
-                ))}
+                )})}
               </div>
 
               <div className="cart-summary">
