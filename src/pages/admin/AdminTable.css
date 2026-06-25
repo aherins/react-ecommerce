@@ -200,3 +200,19 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+.cell-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.cell-with-icon { display: flex; align-items: center; gap: 5px; }
+.form-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.form-hint code { font-size: 11px; background: var(--cream); padding: 1px 5px; border-radius: 4px; }
+.tracking-preview { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tracking-preview input { flex: 1; min-width: 160px; }
+.tracking-preview-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 13px; color: var(--accent); white-space: nowrap;
+}
+.tracking-carrier-select {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 6px 10px; font-family: var(--font-body); font-size: 13px;
+  background: var(--paper); min-width: 140px;
+}

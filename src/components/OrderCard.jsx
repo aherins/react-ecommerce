@@ -1,6 +1,7 @@
 import React from 'react'
-import { Package, Truck, CheckCircle, Clock, AlertCircle } from 'lucide-react'
+import { Package, Truck, CheckCircle, Clock, AlertCircle, ExternalLink } from 'lucide-react'
 import { ORDER_STATUS_LABEL } from '../lib/orders'
+import { buildTrackingUrl } from '../lib/shipping'
 import './OrderCard.css'
 
 const STEPS = [
@@ -36,10 +37,13 @@ function Timeline({ status }) {
   )
 }
 
-export default function OrderCard({ order, products, compact = false }) {
+export default function OrderCard({ order, products, shippingCarriers = [], compact = false }) {
   const items = (order.items || []).map(i => ({
     ...i, product: products.find(p => p.id === i.productId),
   })).filter(i => i.product)
+
+  const carrier = shippingCarriers.find(c => c.id === order.carrierId)
+  const trackingUrl = buildTrackingUrl(carrier, order.trackingNumber)
 
   return (
     <div className="tracking-card">
@@ -66,7 +70,15 @@ export default function OrderCard({ order, products, compact = false }) {
       {order.trackingNumber && (
         <div className="tracking-number-row">
           <Truck size={16}/>
-          <span>Nº de seguimiento: <strong>{order.trackingNumber}</strong></span>
+          <span>
+            {carrier && <>{carrier.name} · </>}
+            Nº de seguimiento: <strong>{order.trackingNumber}</strong>
+          </span>
+          {trackingUrl && (
+            <a href={trackingUrl} target="_blank" rel="noreferrer" className="tracking-external-link">
+              <ExternalLink size={14}/> Rastrear envío
+            </a>
+          )}
         </div>
       )}
 

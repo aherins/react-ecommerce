@@ -54,10 +54,14 @@
 }
 
 .tracking-number-row {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   font-size: 13px; color: var(--muted);
   background: var(--cream); padding: 10px 14px;
   border-radius: var(--radius); margin-bottom: 20px;
+}
+.tracking-external-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-left: auto; font-size: 13px; font-weight: 500; color: var(--accent);
 }
 
 .tracking-items { border-top: 1px solid var(--border); padding-top: 16px; margin-bottom: 12px; }

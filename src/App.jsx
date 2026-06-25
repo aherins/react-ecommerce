@@ -24,6 +24,8 @@ import AdminUsers from './pages/admin/AdminUsers'
 import AdminCoupons from './pages/admin/AdminCoupons'
 import AdminCustomers from './pages/admin/AdminCustomers'
 import AdminCustomerDetail from './pages/admin/AdminCustomerDetail'
+import AdminSuppliers from './pages/admin/AdminSuppliers'
+import AdminShippingCarriers from './pages/admin/AdminShippingCarriers'
 import LegalPage from './pages/LegalPage'
 import NotFoundPage from './pages/NotFoundPage'
 import AccountProfilePage from './pages/account/AccountProfilePage'
@@ -69,6 +71,12 @@ export default function App() {
               }/>
               <Route path="categorias" element={
                 <RequirePermission permission="categorias.ver"><AdminCategories /></RequirePermission>
+              }/>
+              <Route path="proveedores" element={
+                <RequirePermission permission="proveedores.ver"><AdminSuppliers /></RequirePermission>
+              }/>
+              <Route path="envios" element={
+                <RequirePermission permission="envios.ver"><AdminShippingCarriers /></RequirePermission>
               }/>
               <Route path="estadisticas" element={
                 <RequirePermission permission="estadisticas.ver"><AdminStats /></RequirePermission>

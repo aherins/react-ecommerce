@@ -14,6 +14,7 @@ export async function syncOrderAction(action) {
       const patch = {}
       if (action.patch.status !== undefined) patch.status = action.patch.status
       if (action.patch.trackingNumber !== undefined) patch.tracking_number = action.patch.trackingNumber
+      if (action.patch.carrierId !== undefined) patch.carrier_id = action.patch.carrierId
       if (Object.keys(patch).length === 0) break
       const { error } = await supabase.from('orders').update(patch).eq('id', action.id)
       if (error) throw new Error(error.message)

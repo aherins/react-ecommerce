@@ -18,7 +18,7 @@ const FILTERS = [
 
 export default function MyOrdersPage() {
   const { user } = useAuth()
-  const { orders, products } = useStore()
+  const { orders, products, shippingCarriers } = useStore()
   const [filter, setFilter] = useState('all')
 
   const myOrders = useMemo(() => ordersForUser(orders, user), [orders, user])
@@ -71,7 +71,7 @@ export default function MyOrdersPage() {
       ) : (
         <div className="my-orders-list">
           {filtered.map(o => (
-            <OrderCard key={o.id} order={o} products={products}/>
+            <OrderCard key={o.id} order={o} products={products} shippingCarriers={shippingCarriers}/>
           ))}
         </div>
       )}

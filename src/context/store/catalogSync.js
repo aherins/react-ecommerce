@@ -1,5 +1,6 @@
 import { supabase, hasSupabase } from '../../lib/supabase'
 import { couponToDb } from './couponMappers'
+import { supplierToDb, shippingCarrierToDb } from './partnerMappers'
 
 export async function syncCatalogAction(action) {
   if (!hasSupabase) return
@@ -74,6 +75,40 @@ export async function syncCatalogAction(action) {
       if (error) console.error('COUPON_USE:', error.message)
       break
     }
+
+    case 'SUPPLIER_ADD': {
+      const { error } = await supabase.from('suppliers').insert(supplierToDb(action.supplier))
+      if (error) console.error('SUPPLIER_ADD:', error.message)
+      break
+    }
+    case 'SUPPLIER_UPDATE': {
+      const { id, ...rest } = supplierToDb(action.supplier)
+      const { error } = await supabase.from('suppliers').update(rest).eq('id', id)
+      if (error) console.error('SUPPLIER_UPDATE:', error.message)
+      break
+    }
+    case 'SUPPLIER_DELETE': {
+      const { error } = await supabase.from('suppliers').delete().eq('id', action.id)
+      if (error) console.error('SUPPLIER_DELETE:', error.message)
+      break
+    }
+
+    case 'SHIPPING_CARRIER_ADD': {
+      const { error } = await supabase.from('shipping_carriers').insert(shippingCarrierToDb(action.carrier))
+      if (error) console.error('SHIPPING_CARRIER_ADD:', error.message)
+      break
+    }
+    case 'SHIPPING_CARRIER_UPDATE': {
+      const { id, ...rest } = shippingCarrierToDb(action.carrier)
+      const { error } = await supabase.from('shipping_carriers').update(rest).eq('id', id)
+      if (error) console.error('SHIPPING_CARRIER_UPDATE:', error.message)
+      break
+    }
+    case 'SHIPPING_CARRIER_DELETE': {
+      const { error } = await supabase.from('shipping_carriers').delete().eq('id', action.id)
+      if (error) console.error('SHIPPING_CARRIER_DELETE:', error.message)
+      break
+    }
   }
 }
 
@@ -81,4 +116,6 @@ export const CATALOG_ACTIONS = new Set([
   'SET_PRODUCTS', 'PRODUCT_ADD', 'PRODUCT_UPDATE', 'PRODUCT_DELETE', 'PRODUCT_DECREASE_STOCK',
   'SET_CATEGORIES', 'CATEGORY_ADD', 'CATEGORY_UPDATE', 'CATEGORY_DELETE',
   'SET_COUPONS', 'COUPON_ADD', 'COUPON_UPDATE', 'COUPON_TOGGLE_ACTIVE', 'COUPON_DELETE', 'COUPON_USE',
+  'SET_SUPPLIERS', 'SUPPLIER_ADD', 'SUPPLIER_UPDATE', 'SUPPLIER_DELETE',
+  'SET_SHIPPING_CARRIERS', 'SHIPPING_CARRIER_ADD', 'SHIPPING_CARRIER_UPDATE', 'SHIPPING_CARRIER_DELETE',
 ])

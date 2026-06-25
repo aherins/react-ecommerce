@@ -5,10 +5,10 @@ import { useAuth } from '../../context/AuthContext'
 import Portal from '../../components/Portal'
 import './AdminTable.css'
 
-const EMPTY = { name: '', price: '', categoryId: '', image: '', description: '', stock: '', active: true }
+const EMPTY = { name: '', price: '', categoryId: '', supplierId: '', image: '', description: '', stock: '', active: true }
 
 export default function AdminProducts() {
-  const { products, categories, dispatch } = useStore()
+  const { products, categories, suppliers, dispatch } = useStore()
   const { userCan } = useAuth()
   const [form, setForm] = useState(null)
   const [del, setDel] = useState(null)
@@ -48,6 +48,8 @@ export default function AdminProducts() {
   }
 
   const catName = id => categories.find(c => c.id === id)?.name ?? '—'
+  const supplierName = id => suppliers.find(s => s.id === id)?.name ?? '—'
+  const activeSuppliers = suppliers.filter(s => s.active !== false)
 
   return (
     <div className="admin-table-page">
@@ -77,6 +79,7 @@ export default function AdminProducts() {
             <tr>
               <th>Producto</th>
               <th>Categoría</th>
+              <th>Proveedor</th>
               <th>Precio</th>
               <th>Stock</th>
               <th>Estado</th>
@@ -93,6 +96,7 @@ export default function AdminProducts() {
                   </div>
                 </td>
                 <td>{catName(p.categoryId)}</td>
+                <td>{supplierName(p.supplierId)}</td>
                 <td>{parseFloat(p.price).toFixed(2)} €</td>
                 <td>
                   <span className={`stock-badge ${p.stock <= 3 ? 'low' : ''}`}>{p.stock}</span>
@@ -147,6 +151,16 @@ export default function AdminProducts() {
                 <select value={form.categoryId} onChange={e => setForm(f => ({...f, categoryId: e.target.value}))}>
                   <option value="">Sin categoría</option>
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div className="form-row">
+                <label>Proveedor</label>
+                <select value={form.supplierId || ''} onChange={e => setForm(f => ({...f, supplierId: e.target.value}))}>
+                  <option value="">Sin proveedor</option>
+                  {activeSuppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  {form.supplierId && !activeSuppliers.some(s => s.id === form.supplierId) && (
+                    <option value={form.supplierId}>{supplierName(form.supplierId)} (inactivo)</option>
+                  )}
                 </select>
               </div>
               <div className="form-row">

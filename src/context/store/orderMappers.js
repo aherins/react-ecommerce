@@ -15,6 +15,7 @@ export function orderToDb(o) {
     customer_phone:   o.customerPhone || null,
     shipping_address: o.shippingAddress || null,
     tracking_number:  o.trackingNumber || null,
+    carrier_id:       o.carrierId || null,
     simulated:        o.simulated || false,
   }
 }
@@ -36,6 +37,7 @@ export function orderFromDb(r) {
     customerPhone:  r.customer_phone,
     shippingAddress: r.shipping_address,
     trackingNumber: r.tracking_number,
+    carrierId:      r.carrier_id || null,
     simulated:      r.simulated,
   }
 }

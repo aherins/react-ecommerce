@@ -9,11 +9,12 @@ import {
   ORDER_STATUS_LABEL,
   sortOrdersByDate,
 } from '../../lib/admin'
+import { buildTrackingUrl } from '../../lib/shipping'
 import './AdminTable.css'
 import './AdminOrders.css'
 
 export default function AdminOrders() {
-  const { orders, products, dispatch } = useStore()
+  const { orders, products, shippingCarriers, dispatch } = useStore()
   const { userCan } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -59,10 +60,10 @@ export default function AdminOrders() {
     if (selected?.id === orderId) setSelected(s => ({ ...s, status }))
   }
 
-  function addTracking(orderId, trackingNumber) {
+  function addTracking(orderId, { carrierId, trackingNumber }) {
     if (!canEditTracking) return
-    dispatch({ type: 'ORDER_UPDATE', id: orderId, patch: { trackingNumber } })
-    if (selected?.id === orderId) setSelected(s => ({ ...s, trackingNumber }))
+    dispatch({ type: 'ORDER_UPDATE', id: orderId, patch: { carrierId: carrierId || null, trackingNumber } })
+    if (selected?.id === orderId) setSelected(s => ({ ...s, carrierId: carrierId || null, trackingNumber }))
   }
 
   const items = selected
@@ -231,7 +232,11 @@ export default function AdminOrders() {
                 </div>
 
                 {canEditTracking && (
-                  <TrackingInput order={selected} onSave={tn => addTracking(selected.id, tn)}/>
+                  <TrackingInput
+                    order={selected}
+                    carriers={shippingCarriers.filter(c => c.active !== false)}
+                    onSave={patch => addTracking(selected.id, patch)}
+                  />
                 )}
 
                 <Link to={`/seguimiento/${selected.id}`} className="order-tracking-link" target="_blank" rel="noreferrer">
@@ -287,26 +292,66 @@ export default function AdminOrders() {
   )
 }
 
-function TrackingInput({ order, onSave }) {
+function TrackingInput({ order, carriers, onSave }) {
   const [editing, setEditing] = useState(false)
+  const [carrierId, setCarrierId] = useState(order.carrierId || '')
   const [value, setValue] = useState(order.trackingNumber || '')
+
+  const carrier = carriers.find(c => c.id === order.carrierId)
+    || carriers.find(c => c.id === carrierId)
+  const trackingUrl = buildTrackingUrl(carrier, order.trackingNumber)
+
+  function handleSave() {
+    onSave({ carrierId: carrierId || null, trackingNumber: value.trim() })
+    setEditing(false)
+  }
+
   return (
     <div className="tracking-input-row">
       <Truck size={15} color="var(--muted)"/>
       {editing ? (
         <>
-          <input className="tracking-text-input" value={value} onChange={e => setValue(e.target.value)} placeholder="Nº de seguimiento transportista"/>
-          <button className="track-save-btn" onClick={() => { onSave(value); setEditing(false) }}>Guardar</button>
+          <select
+            className="tracking-carrier-select"
+            value={carrierId}
+            onChange={e => setCarrierId(e.target.value)}
+          >
+            <option value="">Transportista</option>
+            {carriers.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <input
+            className="tracking-text-input"
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            placeholder="Nº de seguimiento"
+          />
+          <button className="track-save-btn" onClick={handleSave}>Guardar</button>
           <button className="track-cancel-btn" onClick={() => setEditing(false)}>Cancelar</button>
         </>
       ) : (
         <>
           <span style={{ fontSize: 13, color: 'var(--muted)' }}>
-            {order.trackingNumber
-              ? <strong style={{ color: 'var(--ink)' }}>{order.trackingNumber}</strong>
-              : 'Sin número de seguimiento'}
+            {order.trackingNumber ? (
+              <>
+                {carrier && <strong style={{ color: 'var(--ink)' }}>{carrier.name}: </strong>}
+                <strong style={{ color: 'var(--ink)' }}>{order.trackingNumber}</strong>
+              </>
+            ) : (
+              'Sin número de seguimiento'
+            )}
           </span>
-          <button className="track-edit-btn" onClick={() => setEditing(true)}>
+          {trackingUrl && (
+            <a href={trackingUrl} target="_blank" rel="noreferrer" className="order-tracking-link" style={{ margin: 0 }}>
+              <ExternalLink size={13}/> Rastrear
+            </a>
+          )}
+          <button className="track-edit-btn" onClick={() => {
+            setCarrierId(order.carrierId || '')
+            setValue(order.trackingNumber || '')
+            setEditing(true)
+          }}>
             {order.trackingNumber ? 'Editar' : 'Añadir'}
           </button>
         </>

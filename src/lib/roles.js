@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShoppingBag, Package, Tag, BarChart2, Users, UserCircle, Ticket } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Package, Tag, BarChart2, Users, UserCircle, Ticket, Factory, Truck } from 'lucide-react'
 
 export const ROLES = {
   SUPERADMIN: 'superadmin',
@@ -56,6 +56,16 @@ export const PERMISSIONS = {
 
   'clientes.ver':   ['superadmin', 'admin', 'editor', 'viewer'],
   'clientes.notas': ['superadmin', 'admin', 'editor'],
+
+  'proveedores.ver':    ['superadmin', 'admin', 'editor', 'viewer'],
+  'proveedores.crear':  ['superadmin', 'admin', 'editor'],
+  'proveedores.editar': ['superadmin', 'admin', 'editor'],
+  'proveedores.borrar': ['superadmin', 'admin'],
+
+  'envios.ver':    ['superadmin', 'admin', 'editor', 'viewer'],
+  'envios.crear':  ['superadmin', 'admin', 'editor'],
+  'envios.editar': ['superadmin', 'admin', 'editor'],
+  'envios.borrar': ['superadmin', 'admin'],
 }
 
 export function can(role, permission) {
@@ -68,6 +78,8 @@ export const NAV_ITEMS = [
   { to: '/admin/pedidos',      label: 'Pedidos',       icon: ShoppingBag,     permission: 'pedidos.ver'              },
   { to: '/admin/productos',    label: 'Productos',     icon: Package,         permission: 'productos.ver'            },
   { to: '/admin/categorias',   label: 'Categorías',    icon: Tag,             permission: 'categorias.ver'           },
+  { to: '/admin/proveedores',  label: 'Proveedores',   icon: Factory,         permission: 'proveedores.ver'          },
+  { to: '/admin/envios',       label: 'Envíos',        icon: Truck,           permission: 'envios.ver'               },
   { to: '/admin/estadisticas', label: 'Estadísticas',  icon: BarChart2,       permission: 'estadisticas.ver'         },
   { to: '/admin/clientes',     label: 'Clientes',      icon: UserCircle,      permission: 'clientes.ver'             },
   { to: '/admin/usuarios',     label: 'Equipo',        icon: Users,           permission: 'usuarios.ver'             },

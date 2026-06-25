@@ -29,6 +29,7 @@ create index if not exists orders_email_idx      on public.orders (email);
 alter table public.orders add column if not exists shipping_address jsonb;
 alter table public.orders add column if not exists customer_name text;
 alter table public.orders add column if not exists customer_phone text;
+alter table public.orders add column if not exists carrier_id text;
 
 alter table public.orders enable row level security;
 

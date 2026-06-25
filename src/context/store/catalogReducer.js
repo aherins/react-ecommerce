@@ -56,6 +56,30 @@ export function catalogReducer(state, action) {
         ),
       }
 
+    case 'SET_SUPPLIERS':
+      return { ...state, suppliers: action.suppliers }
+    case 'SUPPLIER_ADD':
+      return { ...state, suppliers: [...state.suppliers, action.supplier] }
+    case 'SUPPLIER_UPDATE':
+      return {
+        ...state,
+        suppliers: state.suppliers.map(s => s.id === action.supplier.id ? action.supplier : s),
+      }
+    case 'SUPPLIER_DELETE':
+      return { ...state, suppliers: state.suppliers.filter(s => s.id !== action.id) }
+
+    case 'SET_SHIPPING_CARRIERS':
+      return { ...state, shippingCarriers: action.shippingCarriers }
+    case 'SHIPPING_CARRIER_ADD':
+      return { ...state, shippingCarriers: [...state.shippingCarriers, action.carrier] }
+    case 'SHIPPING_CARRIER_UPDATE':
+      return {
+        ...state,
+        shippingCarriers: state.shippingCarriers.map(c => c.id === action.carrier.id ? action.carrier : c),
+      }
+    case 'SHIPPING_CARRIER_DELETE':
+      return { ...state, shippingCarriers: state.shippingCarriers.filter(c => c.id !== action.id) }
+
     default:
       return state
   }

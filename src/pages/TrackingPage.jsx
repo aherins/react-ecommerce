@@ -12,7 +12,7 @@ import './TrackingPage.css'
 export default function TrackingPage() {
   const { orderId } = useParams()
   const navigate = useNavigate()
-  const { products, orders } = useStore()
+  const { products, orders, shippingCarriers } = useStore()
   const { user } = useAuth()
   const [query, setQuery] = useState(orderId || '')
   const [email, setEmail] = useState(user?.email || '')
@@ -101,7 +101,9 @@ export default function TrackingPage() {
 
         {found?.length > 0 && (
           <div className="tracking-results">
-            {found.map(o => <OrderCard key={o.id} order={o} products={products}/>)}
+            {found.map(o => (
+              <OrderCard key={o.id} order={o} products={products} shippingCarriers={shippingCarriers}/>
+            ))}
           </div>
         )}
       </div>
