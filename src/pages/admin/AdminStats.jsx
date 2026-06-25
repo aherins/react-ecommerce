@@ -12,6 +12,10 @@ import {
 import { computeStoreStats, STATS_PERIODS, filterOrdersInRange } from '../../lib/stats'
 import './AdminStats.css'
 
+function formatMoney(n) {
+  return n.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
 function StatCard({ label, value, sub, icon: Icon, trend, color = 'var(--accent)', showTrend = true }) {
   return (
     <div className="stat-card" style={{ '--card-color': color }}>
@@ -100,7 +104,7 @@ export default function AdminStats() {
       <div className="stats-kpi-grid">
         <StatCard
           label="Ingresos"
-          value={`${stats.revenue.toFixed(2)} €`}
+          value={`${formatMoney(stats.revenue)} €`}
           sub={`${stats.range.label}`}
           icon={Euro}
           trend={stats.hasComparison ? stats.revenueTrend : null}
@@ -118,7 +122,7 @@ export default function AdminStats() {
         />
         <StatCard
           label="Ticket medio"
-          value={stats.avgTicket > 0 ? `${stats.avgTicket.toFixed(2)} €` : '—'}
+          value={stats.avgTicket > 0 ? `${formatMoney(stats.avgTicket)} €` : '—'}
           icon={BarChart3}
           color="#5a52c8"
           showTrend={false}
