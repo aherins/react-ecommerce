@@ -61,7 +61,7 @@ Copia `.env.example` a `.env.local` y rellena las que tengas:
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 SUPABASE_URL=                   ← mismo valor que VITE_SUPABASE_URL (solo servidor)
-SUPABASE_SERVICE_ROLE_KEY=      ← solo en Vercel; crea usuarios desde /admin/usuarios
+SUPABASE_SERVICE_ROLE_KEY=      ← Settings → API → service_role (secreta, sin VITE_)
 VITE_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=              ← solo en Vercel (no exponer al cliente)
 VITE_CLOUDINARY_CLOUD_NAME=
@@ -69,6 +69,49 @@ VITE_CLOUDINARY_UPLOAD_PRESET=
 RESEND_API_KEY=                 ← solo en Vercel
 RESEND_FROM=
 ```
+
+---
+
+## SUPABASE_SERVICE_ROLE_KEY (obligatoria para Clientes y Equipo)
+
+Las rutas `/api/*` del panel (listar clientes, crear usuarios del equipo) usan la clave **service_role** solo en el servidor. Sin ella verás: *«Falta SUPABASE_SERVICE_ROLE_KEY en el servidor»*.
+
+### Dónde obtenerla
+
+1. [Supabase](https://supabase.com) → tu proyecto → **Settings** → **API**
+2. En **Project API keys**, copia **`service_role`** (secret, no la `anon`)
+
+### En Vercel (producción)
+
+1. Vercel → tu proyecto → **Settings** → **Environment Variables**
+2. Añade:
+
+| Name | Value |
+|------|--------|
+| `SUPABASE_URL` | `https://tu-proyecto.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | la clave `service_role` |
+
+3. **Redeploy** el proyecto (Deployments → ⋯ → Redeploy)
+
+### En local
+
+Añade al archivo `.env` (junto a las `VITE_*`, **sin** prefijo `VITE_`):
+
+```
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
+```
+
+Luego arranca con APIs activas:
+
+```bash
+npx vercel dev
+# o: npm run dev:api
+```
+
+`npm run dev` (solo Vite) **no** ejecuta `/api/*`; para probar Clientes/Equipo en local usa `vercel dev`.
+
+**Importante:** nunca pongas `service_role` en una variable `VITE_*` ni la subas a Git.
 
 ---
 
