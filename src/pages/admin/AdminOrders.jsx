@@ -69,6 +69,13 @@ export default function AdminOrders() {
     ? (selected.items || []).map(i => ({ ...i, product: products.find(p => p.id === i.productId) })).filter(i => i.product)
     : []
 
+  const itemsSubtotal = items.reduce(
+    (sum, { price, product, qty }) => sum + (price ?? product?.price ?? 0) * qty,
+    0
+  )
+  const orderSubtotal = selected?.subtotal ?? itemsSubtotal
+  const orderDiscount = selected?.discount || 0
+
   const filterTabs = [
     { key: 'all', label: 'Todos', count: sortedOrders.length },
     { key: 'to_ship', label: 'Por enviar', count: toShipCount },
@@ -232,20 +239,38 @@ export default function AdminOrders() {
                 </Link>
 
                 <h3 className="order-items-title">Artículos</h3>
-                {items.map(({ product, qty, productId }) => (
-                  <div key={productId} className="order-item-row">
-                    <img src={product.image} alt={product.name}/>
-                    <div className="order-item-info">
-                      <p>{product.name}</p>
-                      <p className="order-item-qty">× {qty}</p>
+                {items.map(({ product, qty, productId, price }) => {
+                  const unitPrice = price ?? product?.price ?? 0
+                  return (
+                    <div key={productId} className="order-item-row">
+                      <img src={product.image} alt={product.name}/>
+                      <div className="order-item-info">
+                        <p>{product.name}</p>
+                        <p className="order-item-qty">× {qty}</p>
+                      </div>
+                      <p className="order-item-price">{(unitPrice * qty).toFixed(2)} €</p>
                     </div>
-                    <p className="order-item-price">{(product.price * qty).toFixed(2)} €</p>
-                  </div>
-                ))}
+                  )
+                })}
 
-                <div className="order-total-row">
-                  <span>Total</span>
-                  <strong>{selected.total?.toFixed(2)} €</strong>
+                <div className="order-summary">
+                  <div className="order-summary-row">
+                    <span>Subtotal</span>
+                    <span>{orderSubtotal.toFixed(2)} €</span>
+                  </div>
+                  {orderDiscount > 0 && (
+                    <div className="order-summary-row order-summary-row--discount">
+                      <span>
+                        Descuento
+                        {selected.couponCode && <em> ({selected.couponCode})</em>}
+                      </span>
+                      <span>−{orderDiscount.toFixed(2)} €</span>
+                    </div>
+                  )}
+                  <div className="order-total-row">
+                    <span>Total</span>
+                    <strong>{selected.total?.toFixed(2)} €</strong>
+                  </div>
                 </div>
 
                 {canEditStatus && (selected.status === 'pending' || selected.status === 'processing') && (
