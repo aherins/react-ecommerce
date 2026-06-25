@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShoppingBag, Package, Tag, BarChart2, Users, Ticket } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Package, Tag, BarChart2, Users, UserCircle, Ticket } from 'lucide-react'
 
 export const ROLES = {
   SUPERADMIN: 'superadmin',
@@ -53,6 +53,9 @@ export const PERMISSIONS = {
   'cupones.crear':  ['superadmin', 'admin'],
   'cupones.editar': ['superadmin', 'admin'],
   'cupones.borrar': ['superadmin', 'admin'],
+
+  'clientes.ver':   ['superadmin', 'admin', 'editor', 'viewer'],
+  'clientes.notas': ['superadmin', 'admin', 'editor'],
 }
 
 export function can(role, permission) {
@@ -66,7 +69,8 @@ export const NAV_ITEMS = [
   { to: '/admin/productos',    label: 'Productos',     icon: Package,         permission: 'productos.ver'            },
   { to: '/admin/categorias',   label: 'Categorías',    icon: Tag,             permission: 'categorias.ver'           },
   { to: '/admin/estadisticas', label: 'Estadísticas',  icon: BarChart2,       permission: 'estadisticas.ver'         },
-  { to: '/admin/usuarios',     label: 'Usuarios',      icon: Users,           permission: 'usuarios.ver'             },
+  { to: '/admin/clientes',     label: 'Clientes',      icon: UserCircle,      permission: 'clientes.ver'             },
+  { to: '/admin/usuarios',     label: 'Equipo',        icon: Users,           permission: 'usuarios.ver'             },
   { to: '/admin/cupones',      label: 'Cupones',       icon: Ticket,          permission: 'cupones.ver'              },
 ]
 

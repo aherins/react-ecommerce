@@ -79,6 +79,7 @@ export default async function handler(req) {
       id: userId,
       email,
       full_name: name || email.split('@')[0],
+      account_type: 'staff',
     }),
   })
 

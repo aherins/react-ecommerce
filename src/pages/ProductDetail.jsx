@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShoppingBag, Package } from 'lucide-react'
 import RecentActivity from '../components/RecentActivity'
+import { useAuth } from '../context/AuthContext'
 import { activity } from '../lib/activity'
 import { useStore } from '../context/StoreContext'
 import { canAddToCart } from '../context/store/stock'
@@ -10,6 +11,7 @@ import './ProductDetail.css'
 export default function ProductDetail() {
   const { id } = useParams()
   const { products, categories, dispatch, cart } = useStore()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   const product = products.find(p => p.id === id)
@@ -22,8 +24,8 @@ export default function ProductDetail() {
 
   // Registrar visita al producto
   useEffect(() => {
-    if (product?.id) activity.trackView(product.id)
-  }, [product?.id])
+    if (product?.id) activity.trackView(product.id, user?.id)
+  }, [product?.id, user?.id])
 
   function handleAdd() {
     if (!canAdd) return

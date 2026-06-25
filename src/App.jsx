@@ -22,6 +22,8 @@ import AdminOrders from './pages/admin/AdminOrders'
 import AdminStats from './pages/admin/AdminStats'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminCoupons from './pages/admin/AdminCoupons'
+import AdminCustomers from './pages/admin/AdminCustomers'
+import AdminCustomerDetail from './pages/admin/AdminCustomerDetail'
 
 // AuthProvider envuelve TODA la app pero el loading ya no bloquea
 // rutas públicas gracias al fix en AuthContext (loading solo afecta a AdminLayout)
@@ -70,6 +72,12 @@ export default function App() {
               }/>
               <Route path="cupones" element={
                 <RequirePermission permission="cupones.ver"><AdminCoupons /></RequirePermission>
+              }/>
+              <Route path="clientes" element={
+                <RequirePermission permission="clientes.ver"><AdminCustomers /></RequirePermission>
+              }/>
+              <Route path="clientes/:id" element={
+                <RequirePermission permission="clientes.ver"><AdminCustomerDetail /></RequirePermission>
               }/>
             </Route>
           </Routes>

@@ -46,7 +46,8 @@ npm run dev
 | `/admin/categorias`   | CRUD categorías               |
 | `/admin/estadisticas` | Estadísticas y export CSV     |
 | `/admin/cupones`      | Cupones de descuento          |
-| `/admin/usuarios`     | Gestión de roles              |
+| `/admin/clientes`     | CRM — clientes de la tienda   |
+| `/admin/usuarios`     | Equipo y roles del panel      |
 | `/cuenta`             | Panel de usuario              |
 | `/cuenta/pedidos`     | Pedidos del usuario           |
 
@@ -160,6 +161,8 @@ alter publication supabase_realtime add table orders;
 ```
 
 Si `/admin/usuarios` sale vacío con usuarios en la BBDD, ejecuta `supabase/user_roles_rls.sql` y configura `SUPABASE_SERVICE_ROLE_KEY` en Vercel.
+
+**CRM clientes:** ejecuta `supabase/customers.sql` para tablas de actividad, deseos y notas. Luego `/admin/clientes` lista compradores registrados (excluye equipo con rol en `user_roles`).
 
 ---
 

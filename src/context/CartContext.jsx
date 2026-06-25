@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react'
 import { activity } from '../lib/activity'
+import { customerSync } from '../lib/customerSync'
+import { useAuth } from './AuthContext'
 import { useCatalog } from './CatalogContext'
 import { cartReducer } from './store/cartReducer'
 import { loadLocal, saveLocal } from './store/helpers'
@@ -7,6 +9,7 @@ import { loadLocal, saveLocal } from './store/helpers'
 const CartContext = createContext(null)
 
 export function CartProvider({ children }) {
+  const { user } = useAuth()
   const { products } = useCatalog()
   const [state, dispatch] = useReducer(
     (s, action) => cartReducer(s, action, products),
@@ -19,11 +22,18 @@ export function CartProvider({ children }) {
 
   useEffect(() => { saveLocal('cart', state.cart) }, [state.cart])
   useEffect(() => { saveLocal('wishlist', state.wishlist) }, [state.wishlist])
+  useEffect(() => {
+    if (user?.id) customerSync.syncWishlist(user.id, state.wishlist)
+  }, [state.wishlist, user?.id])
 
   const smartDispatch = useCallback((action) => {
+    if (action.type === 'WISHLIST_TOGGLE' && user?.id) {
+      const has = state.wishlist.includes(action.productId)
+      activity.trackWishlist(action.productId, !has, user.id)
+    }
     dispatch(action)
-    if (action.type === 'CART_ADD') activity.trackCartAdd(action.productId)
-  }, [])
+    if (action.type === 'CART_ADD') activity.trackCartAdd(action.productId, user?.id)
+  }, [user?.id, state.wishlist])
 
   const cartCount = useMemo(
     () => state.cart.reduce((s, i) => s + i.qty, 0),

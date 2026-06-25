@@ -1,5 +1,7 @@
 // ─── Gestión del historial de actividad del usuario ───────────────────────────
-// Almacenado en localStorage — sin necesidad de autenticación
+// localStorage + sincronización opcional con Supabase si hay sesión
+
+import { customerSync } from './customerSync'
 
 const MAX_ITEMS = 20
 
@@ -10,7 +12,6 @@ function setStore(key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)) } catch {}
 }
 
-// Añade un id a una lista, sin duplicados, máximo MAX_ITEMS
 function pushUnique(key, id) {
   const list = getStore(key).filter(i => i !== id)
   list.unshift(id)
@@ -18,22 +19,29 @@ function pushUnique(key, id) {
 }
 
 export const activity = {
-  // Producto visto (llamar en ProductDetail al montar)
-  trackView(productId) {
+  trackView(productId, userId) {
     pushUnique('activity_viewed', productId)
+    if (userId) customerSync.trackEvent(userId, 'product_view', productId)
   },
 
-  // Producto añadido al carrito alguna vez
-  trackCartAdd(productId) {
+  trackCartAdd(productId, userId) {
     pushUnique('activity_carted', productId)
+    if (userId) customerSync.trackEvent(userId, 'add_to_cart', productId)
   },
 
-  // Búsqueda realizada
-  trackSearch(query) {
+  trackSearch(query, userId) {
     if (!query?.trim()) return
-    const searches = getStore('activity_searches').filter(q => q !== query.trim())
-    searches.unshift(query.trim())
+    const q = query.trim()
+    const searches = getStore('activity_searches').filter(s => s !== q)
+    searches.unshift(q)
     setStore('activity_searches', searches.slice(0, 10))
+    if (userId) customerSync.trackEvent(userId, 'search', null, { query: q })
+  },
+
+  trackWishlist(productId, added, userId) {
+    if (userId) {
+      customerSync.trackEvent(userId, added ? 'wishlist_add' : 'wishlist_remove', productId)
+    }
   },
 
   getViewed()   { return getStore('activity_viewed')   },

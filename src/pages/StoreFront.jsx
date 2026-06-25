@@ -3,22 +3,24 @@ import { useSearchParams } from 'react-router-dom'
 import RecentActivity from '../components/RecentActivity'
 import ProductCard from '../components/ProductCard'
 import { useStore } from '../context/StoreContext'
+import { useAuth } from '../context/AuthContext'
 import { activity } from '../lib/activity'
 import './StoreFront.css'
 
 export default function StoreFront() {
   const { products, categories } = useStore()
+  const { user } = useAuth()
   const [params, setParams] = useSearchParams()
   const [search, setSearch] = useState('')
 
   function handleSearch(q) {
     setSearch(q)
-    if (q.trim().length >= 2) activity.trackSearch(q.trim())
+    if (q.trim().length >= 2) activity.trackSearch(q.trim(), user?.id)
   }
 
   function applySearch(q) {
     setSearch(q)
-    if (q) activity.trackSearch(q)
+    if (q) activity.trackSearch(q, user?.id)
   }
   const activeCat = params.get('cat') || ''
 

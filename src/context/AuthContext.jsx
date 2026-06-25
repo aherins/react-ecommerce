@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase, hasSupabase } from '../lib/supabase'
 import { can, DEMO_USERS } from '../lib/roles'
+import { customerSync } from '../lib/customerSync'
 
 const AuthContext = createContext(null)
 
@@ -50,6 +51,10 @@ export function AuthProvider({ children }) {
         //   otra query a Supabase, evitando el deadlock del cliente
         setTimeout(async () => {
           await resolveRole(u)
+          if (u && !u._demoRole) {
+            await customerSync.ensureProfile(u)
+            await customerSync.touchLastSeen(u.id)
+          }
           if (!initialized.current) {
             initialized.current = true
             setLoading(false)
@@ -92,7 +97,16 @@ export function AuthProvider({ children }) {
 
   async function signUp(email, password, metadata = {}) {
     if (!hasSupabase) return { error: { message: 'Registro no disponible en modo demo' } }
-    return supabase.auth.signUp({ email, password, options: { data: metadata } })
+    const result = await supabase.auth.signUp({ email, password, options: { data: metadata } })
+    if (!result.error && result.data.user) {
+      await supabase.from('profiles').upsert({
+        id: result.data.user.id,
+        email,
+        full_name: metadata.full_name || '',
+        account_type: 'customer',
+      }, { onConflict: 'id' })
+    }
+    return result
   }
 
   async function signInWithGoogle() {

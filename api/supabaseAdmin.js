@@ -16,6 +16,10 @@ export function adminHeaders(serviceKey) {
 }
 
 export async function verifySuperadmin(token, supabaseUrl, serviceKey) {
+  return verifyAdminRole(token, supabaseUrl, serviceKey, ['superadmin'])
+}
+
+export async function verifyAdminRole(token, supabaseUrl, serviceKey, allowedRoles) {
   if (!token) return { ok: false, status: 401, error: 'Sesión no válida.' }
 
   const meRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
@@ -31,9 +35,9 @@ export async function verifySuperadmin(token, supabaseUrl, serviceKey) {
     { headers: { ...adminHeaders(serviceKey), Accept: 'application/vnd.pgrst.object+json' } },
   )
   const callerRole = roleRes.ok ? await roleRes.json() : null
-  if (callerRole?.role !== 'superadmin') {
-    return { ok: false, status: 403, error: 'Solo un superadmin puede gestionar usuarios.' }
+  if (!allowedRoles.includes(callerRole?.role)) {
+    return { ok: false, status: 403, error: 'No tienes permiso para esta acción.' }
   }
 
-  return { ok: true, me }
+  return { ok: true, me, role: callerRole?.role }
 }

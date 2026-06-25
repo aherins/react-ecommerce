@@ -1,0 +1,221 @@
+import React, { useEffect, useState } from 'react'
+import { Link, useParams, useNavigate } from 'react-router-dom'
+import {
+  ArrowLeft, ShoppingBag, Heart, Eye, Search, MessageSquare,
+  Package, Send, ExternalLink,
+} from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
+import { supabase, hasSupabase } from '../../lib/supabase'
+import { fetchStoreCustomerDetail, addCustomerNote } from '../../lib/customersApi'
+import { ORDER_STATUS_LABEL } from '../../lib/admin'
+import './AdminCustomers.css'
+
+const EVENT_LABELS = {
+  product_view: 'Vió producto',
+  search: 'Búsqueda',
+  add_to_cart: 'Añadió al carrito',
+  wishlist_add: 'Añadió a deseos',
+  wishlist_remove: 'Quitó de deseos',
+}
+
+function fmtDateTime(iso) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleString('es-ES', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  })
+}
+
+export default function AdminCustomerDetail() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { userCan } = useAuth()
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [tab, setTab] = useState('resumen')
+  const [note, setNote] = useState('')
+  const [savingNote, setSavingNote] = useState(false)
+
+  const canNote = userCan('clientes.notas')
+
+  useEffect(() => { load() }, [id])
+
+  async function load() {
+    setLoading(true)
+    setError('')
+    if (!hasSupabase) {
+      setError('Conecta Supabase para ver fichas de cliente.')
+      setLoading(false)
+      return
+    }
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('Sesión expirada.')
+      setData(await fetchStoreCustomerDetail(session.access_token, id))
+    } catch (err) {
+      setError(err.message)
+    }
+    setLoading(false)
+  }
+
+  async function handleAddNote(e) {
+    e.preventDefault()
+    if (!canNote || !note.trim()) return
+    setSavingNote(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const created = await addCustomerNote(session.access_token, id, note.trim())
+      setData(d => ({ ...d, notes: [created, ...(d.notes || [])] }))
+      setNote('')
+    } catch (err) {
+      setError(err.message)
+    }
+    setSavingNote(false)
+  }
+
+  if (loading) return <div className="customer-detail-loading"><span className="spinner dark"/></div>
+  if (error && !data) return (
+    <div className="customer-detail-error">
+      <p>{error}</p>
+      <button onClick={() => navigate('/admin/clientes')}>Volver</button>
+    </div>
+  )
+  if (!data) return null
+
+  const { customer, stats, orders, events, wishlist, notes } = data
+  const tabs = [
+    { key: 'resumen', label: 'Resumen', icon: Package },
+    { key: 'pedidos', label: `Pedidos (${orders.length})`, icon: ShoppingBag },
+    { key: 'actividad', label: 'Actividad', icon: Eye },
+    { key: 'deseos', label: `Deseos (${wishlist.length})`, icon: Heart },
+    { key: 'notas', label: `Notas (${notes.length})`, icon: MessageSquare },
+  ]
+
+  return (
+    <div className="customer-detail-page">
+      <Link to="/admin/clientes" className="customer-back"><ArrowLeft size={16}/> Clientes</Link>
+
+      <header className="customer-detail-header">
+        <div className="customer-detail-avatar">
+          {customer.avatar_url
+            ? <img src={customer.avatar_url} alt="" referrerPolicy="no-referrer"/>
+            : <span>{(customer.name || customer.email)[0].toUpperCase()}</span>}
+        </div>
+        <div>
+          <h1>{customer.name || customer.email}</h1>
+          <p>{customer.email}</p>
+          <div className="customer-detail-meta">
+            <span>Registro: {fmtDateTime(customer.registered_at)}</span>
+            <span>Última visita: {fmtDateTime(customer.last_seen_at)}</span>
+          </div>
+        </div>
+      </header>
+
+      <div className="customer-stats-row">
+        <div className="customer-stat"><strong>{stats.order_count}</strong><span>Pedidos</span></div>
+        <div className="customer-stat"><strong>{stats.total_spent.toFixed(2)} €</strong><span>Gastado</span></div>
+        <div className="customer-stat"><strong>{stats.views_count}</strong><span>Productos vistos</span></div>
+        <div className="customer-stat"><strong>{stats.wishlist_count}</strong><span>En deseos</span></div>
+      </div>
+
+      <nav className="customer-tabs">
+        {tabs.map(t => (
+          <button key={t.key} className={tab === t.key ? 'active' : ''} onClick={() => setTab(t.key)}>
+            <t.icon size={14}/> {t.label}
+          </button>
+        ))}
+      </nav>
+
+      <div className="customer-tab-panel">
+        {tab === 'resumen' && (
+          <div className="customer-summary">
+            <p>Cliente registrado en la tienda online. Usa las pestañas para ver pedidos, navegación y notas internas.</p>
+            {orders[0] && (
+              <div className="customer-last-order">
+                <h3>Último pedido</h3>
+                <p>#{orders[0].id.slice(-8).toUpperCase()} · {ORDER_STATUS_LABEL[orders[0].status] || orders[0].status} · {Number(orders[0].total).toFixed(2)} €</p>
+                <Link to="/admin/pedidos" state={{ openOrderId: orders[0].id }}>Ver en pedidos <ExternalLink size={12}/></Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === 'pedidos' && (
+          <div className="customer-orders-list">
+            {orders.length === 0 && <p className="muted">Sin pedidos</p>}
+            {orders.map(o => (
+              <div key={o.id} className="customer-order-row">
+                <div>
+                  <strong>#{o.id.slice(-8).toUpperCase()}</strong>
+                  <span>{fmtDateTime(o.created_at)}</span>
+                </div>
+                <span>{ORDER_STATUS_LABEL[o.status] || o.status}</span>
+                <strong>{Number(o.total).toFixed(2)} €</strong>
+                <Link to="/admin/pedidos" state={{ openOrderId: o.id }}>Abrir</Link>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'actividad' && (
+          <ul className="customer-timeline">
+            {events.length === 0 && <li className="muted">Sin actividad registrada (solo se guarda con sesión iniciada)</li>}
+            {events.map(e => (
+              <li key={e.id}>
+                <span className="timeline-time">{fmtDateTime(e.created_at)}</span>
+                <span className="timeline-type">{EVENT_LABELS[e.event_type] || e.event_type}</span>
+                {e.product && <span className="timeline-product">{e.product.name}</span>}
+                {e.event_type === 'search' && e.metadata?.query && (
+                  <span className="timeline-product"><Search size={12}/> «{e.metadata.query}»</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {tab === 'deseos' && (
+          <div className="customer-wishlist-grid">
+            {wishlist.length === 0 && <p className="muted">Lista de deseos vacía</p>}
+            {wishlist.map(w => w.product && (
+              <div key={w.product_id} className="customer-wish-card">
+                <img src={w.product.image} alt={w.product.name}/>
+                <div>
+                  <p>{w.product.name}</p>
+                  <span>{w.product.price.toFixed(2)} €</span>
+                  <small>{fmtDateTime(w.added_at)}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'notas' && (
+          <div className="customer-notes">
+            {canNote && (
+              <form className="customer-note-form" onSubmit={handleAddNote}>
+                <textarea
+                  value={note}
+                  onChange={e => setNote(e.target.value)}
+                  placeholder="Nota interna sobre este cliente (solo visible para el equipo)…"
+                  rows={3}
+                />
+                <button type="submit" disabled={savingNote || !note.trim()}>
+                  {savingNote ? <span className="spinner"/> : <><Send size={14}/> Guardar nota</>}
+                </button>
+              </form>
+            )}
+            <ul className="customer-notes-list">
+              {notes.length === 0 && <li className="muted">Sin notas</li>}
+              {notes.map(n => (
+                <li key={n.id}>
+                  <p>{n.body}</p>
+                  <small>{n.author_name} · {fmtDateTime(n.created_at)}</small>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
