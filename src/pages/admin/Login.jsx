@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { LogIn, Info } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { LogIn, Info, Store } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { DEMO_USERS, ROLE_LABELS, ROLE_COLORS } from '../../lib/roles'
@@ -111,6 +111,10 @@ export default function Login() {
             </button>
           )}
         </form>
+
+        <Link to="/" className="login-store-link">
+          <Store size={16}/> Volver a la tienda
+        </Link>
       </div>
     </div>
   )

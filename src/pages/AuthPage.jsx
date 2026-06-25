@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { LogIn, UserPlus } from 'lucide-react'
+import { useNavigate, Link } from 'react-router-dom'
+import { LogIn, UserPlus, Store } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import './AuthPage.css'
 
@@ -136,6 +136,9 @@ export default function AuthForms() {
           ? <LoginForm onSwitch={() => setMode('register')} />
           : <RegisterForm onSwitch={() => setMode('login')} />
         }
+        <Link to="/" className="auth-store-link">
+          <Store size={16}/> Seguir navegando sin iniciar sesión
+        </Link>
       </div>
     </main>
   )

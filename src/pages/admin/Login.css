@@ -156,6 +156,21 @@
 
 .login-forgot:hover { color: var(--ink); }
 
+.login-store-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--muted);
+  transition: color var(--transition);
+}
+
+.login-store-link:hover { color: var(--ink); }
+
 /* Submit button */
 .login-btn {
   display: flex;

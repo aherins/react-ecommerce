@@ -59,6 +59,19 @@ form { display: flex; flex-direction: column; gap: 16px; }
 .auth-switch { font-size: 13px; color: var(--muted); text-align: center; margin-top: 16px; }
 .auth-switch button { color: var(--accent); font-size: 13px; cursor: pointer; text-decoration: underline; }
 
+.auth-store-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--muted);
+  transition: color var(--transition);
+}
+
+.auth-store-link:hover { color: var(--ink); }
+
 /* Account panel */
 .account-panel {}
 .account-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
