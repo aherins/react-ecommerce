@@ -94,25 +94,6 @@
 .stock-alert-msg--ok { color: var(--success); }
 .stock-alert-msg--err { color: var(--danger); }
 
-.product-card-out {
-  position: absolute;
-  inset: auto 8px 8px 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: 99px;
-  background: rgba(255,255,255,0.95);
-  border: 1px solid var(--border);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ink);
-  backdrop-filter: blur(4px);
-}
-
-.product-card-out:hover { border-color: var(--accent); color: var(--accent); }
-
 .detail-stock--out { color: var(--danger); }
 
 .admin-alert-badge {

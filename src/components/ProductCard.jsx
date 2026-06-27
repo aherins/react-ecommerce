@@ -4,7 +4,6 @@ import { ShoppingBag, Heart, Bell } from 'lucide-react'
 import { useStore } from '../context/StoreContext'
 import { canAddToCart } from '../context/store/stock'
 import './ProductCard.css'
-import './StockAlertForm.css'
 
 export default function ProductCard({ product }) {
   const { dispatch, wishlist, cart } = useStore()
@@ -22,9 +21,10 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <Link to={`/producto/${product.id}`} className="product-card">
+    <Link to={`/producto/${product.id}`} className={`product-card ${!canAdd ? 'product-card--out' : ''}`}>
       <div className="product-card-img">
         <img src={product.image} alt={product.name} loading="lazy" />
+        {!canAdd && <span className="product-card-badge-out">Agotado</span>}
         <button
           className={`product-card-wish ${inWishlist ? 'active' : ''}`}
           onClick={handleWish}
@@ -32,18 +32,21 @@ export default function ProductCard({ product }) {
         >
           <Heart size={16} fill={inWishlist ? 'currentColor' : 'none'} />
         </button>
-        <button className="product-card-cta" onClick={handleAdd} disabled={!canAdd}>
-          <ShoppingBag size={16} /><span>{canAdd ? 'Añadir' : 'Sin stock'}</span>
-        </button>
-        {!canAdd && (
-          <Link to={`/producto/${product.id}`} className="product-card-out" onClick={e => e.stopPropagation()}>
-            <Bell size={14}/> Avisar cuando haya stock
-          </Link>
+        {canAdd && (
+          <button className="product-card-cta" onClick={handleAdd}>
+            <ShoppingBag size={16} /><span>Añadir</span>
+          </button>
         )}
       </div>
       <div className="product-card-info">
         <p className="product-card-name">{product.name}</p>
         <p className="product-card-price">{product.price.toFixed(2)} €</p>
+        {!canAdd && (
+          <p className="product-card-alert-hint">
+            <Bell size={13} aria-hidden="true"/>
+            <span>Avisar cuando haya stock</span>
+          </p>
+        )}
       </div>
     </Link>
   )
