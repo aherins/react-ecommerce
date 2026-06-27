@@ -48,12 +48,12 @@ export function CartProvider({ children }) {
       const has = state.wishlist.includes(action.productId)
       activity.trackWishlist(action.productId, !has, user.id)
     }
-    if (action.type === 'CART_MOVE_TO_WISHLIST' && user?.id) {
+    if (action.type === 'WISHLIST_ADD' && user?.id) {
       if (!state.wishlist.includes(action.productId)) {
         activity.trackWishlist(action.productId, true, user.id)
       }
     }
-    if (action.type === 'CART_MOVE_ALL_TO_WISHLIST' && user?.id) {
+    if (action.type === 'WISHLIST_ADD_ALL_FROM_CART' && user?.id) {
       state.cart
         .map(i => i.productId)
         .filter(id => !state.wishlist.includes(id))

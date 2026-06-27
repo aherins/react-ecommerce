@@ -15,12 +15,12 @@ export default function CartPage() {
   const discount   = applied?.discount   || 0
   const finalTotal = applied?.finalTotal ?? cartTotal
 
-  function moveToWishlist(productId) {
-    dispatch({ type: 'CART_MOVE_TO_WISHLIST', productId })
+  function toggleWishlist(productId) {
+    dispatch({ type: 'WISHLIST_TOGGLE', productId })
   }
 
-  function moveAllToWishlist() {
-    dispatch({ type: 'CART_MOVE_ALL_TO_WISHLIST' })
+  function addAllToWishlist() {
+    dispatch({ type: 'WISHLIST_ADD_ALL_FROM_CART' })
   }
 
   return (
@@ -40,7 +40,7 @@ export default function CartPage() {
               <div className="cart-items-col">
                 <div className="cart-items-toolbar">
                   <p className="cart-items-count">{items.length} producto{items.length === 1 ? '' : 's'}</p>
-                  <button type="button" className="cart-save-all-wish" onClick={moveAllToWishlist}>
+                  <button type="button" className="cart-save-all-wish" onClick={addAllToWishlist}>
                     <Heart size={15}/>
                     Guardar todo en deseos
                   </button>
@@ -72,9 +72,10 @@ export default function CartPage() {
                       <button
                         type="button"
                         className={`cart-item-wish ${inWishlist ? 'active' : ''}`}
-                        onClick={() => moveToWishlist(productId)}
-                        title={inWishlist ? 'Quitar del carrito (ya en deseos)' : 'Guardar en deseos y quitar del carrito'}
-                        aria-label={inWishlist ? 'Quitar del carrito, ya está en deseos' : 'Guardar en deseos y quitar del carrito'}
+                        onClick={() => toggleWishlist(productId)}
+                        title={inWishlist ? 'Quitar de la lista de deseos' : 'Añadir a la lista de deseos'}
+                        aria-label={inWishlist ? 'Quitar de la lista de deseos' : 'Añadir a la lista de deseos'}
+                        aria-pressed={inWishlist}
                       >
                         <Heart size={16} fill={inWishlist ? 'currentColor' : 'none'}/>
                       </button>
