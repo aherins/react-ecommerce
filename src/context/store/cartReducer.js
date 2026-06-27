@@ -43,6 +43,23 @@ export function cartReducer(state, action, products = []) {
           : [...state.wishlist, action.productId],
       }
     }
+    case 'CART_MOVE_TO_WISHLIST': {
+      const { productId } = action
+      const inWishlist = state.wishlist.includes(productId)
+      return {
+        ...state,
+        wishlist: inWishlist ? state.wishlist : [...state.wishlist, productId],
+        cart: state.cart.filter(i => i.productId !== productId),
+      }
+    }
+    case 'CART_MOVE_ALL_TO_WISHLIST': {
+      const ids = state.cart.map(i => i.productId)
+      return {
+        ...state,
+        wishlist: [...new Set([...state.wishlist, ...ids])],
+        cart: [],
+      }
+    }
     case 'SET_WISHLIST':
       return { ...state, wishlist: action.wishlist || [] }
 

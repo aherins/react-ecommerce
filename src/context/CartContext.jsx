@@ -48,9 +48,20 @@ export function CartProvider({ children }) {
       const has = state.wishlist.includes(action.productId)
       activity.trackWishlist(action.productId, !has, user.id)
     }
+    if (action.type === 'CART_MOVE_TO_WISHLIST' && user?.id) {
+      if (!state.wishlist.includes(action.productId)) {
+        activity.trackWishlist(action.productId, true, user.id)
+      }
+    }
+    if (action.type === 'CART_MOVE_ALL_TO_WISHLIST' && user?.id) {
+      state.cart
+        .map(i => i.productId)
+        .filter(id => !state.wishlist.includes(id))
+        .forEach(id => activity.trackWishlist(id, true, user.id))
+    }
     dispatch(action)
     if (action.type === 'CART_ADD') activity.trackCartAdd(action.productId, user?.id)
-  }, [user?.id, state.wishlist])
+  }, [user?.id, state.wishlist, state.cart])
 
   const cartCount = useMemo(
     () => state.cart.reduce((s, i) => s + i.qty, 0),

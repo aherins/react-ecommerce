@@ -1,19 +1,27 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Trash2, Plus, Minus, ArrowLeft, CreditCard } from 'lucide-react'
+import { Trash2, Plus, Minus, ArrowLeft, CreditCard, Heart } from 'lucide-react'
 import CouponInput from '../components/CouponInput'
 import { useStore } from '../context/StoreContext'
 import { canAddToCart } from '../context/store/stock'
 import './CartPage.css'
 
 export default function CartPage() {
-  const { cart, products, cartTotal, dispatch } = useStore()
+  const { cart, products, cartTotal, wishlist, dispatch } = useStore()
   const navigate = useNavigate()
   const [applied, setApplied] = useState(null)
 
   const items      = (cart || []).map(i => ({ ...i, product: (products||[]).find(p => p.id === i.productId) })).filter(i => i.product)
   const discount   = applied?.discount   || 0
   const finalTotal = applied?.finalTotal ?? cartTotal
+
+  function moveToWishlist(productId) {
+    dispatch({ type: 'CART_MOVE_TO_WISHLIST', productId })
+  }
+
+  function moveAllToWishlist() {
+    dispatch({ type: 'CART_MOVE_ALL_TO_WISHLIST' })
+  }
 
   return (
     <>
@@ -29,9 +37,18 @@ export default function CartPage() {
             </div>
           ) : (
             <div className="cart-layout">
-              <div className="cart-items">
+              <div className="cart-items-col">
+                <div className="cart-items-toolbar">
+                  <p className="cart-items-count">{items.length} producto{items.length === 1 ? '' : 's'}</p>
+                  <button type="button" className="cart-save-all-wish" onClick={moveAllToWishlist}>
+                    <Heart size={15}/>
+                    Guardar todo en deseos
+                  </button>
+                </div>
+                <div className="cart-items">
                 {items.map(({ product, qty, productId }) => {
                   const canIncrease = canAddToCart(product, cart)
+                  const inWishlist = wishlist?.includes(productId)
                   return (
                   <div key={productId} className="cart-item">
                     <div className="cart-item-img"><img src={product.image} alt={product.name}/></div>
@@ -51,9 +68,29 @@ export default function CartPage() {
                       ><Plus size={14}/></button>
                     </div>
                     <p className="cart-item-subtotal">{(product.price * qty).toFixed(2)} €</p>
-                    <button className="cart-item-del" onClick={() => dispatch({ type:'CART_REMOVE', productId })}><Trash2 size={16}/></button>
+                    <div className="cart-item-actions">
+                      <button
+                        type="button"
+                        className={`cart-item-wish ${inWishlist ? 'active' : ''}`}
+                        onClick={() => moveToWishlist(productId)}
+                        title={inWishlist ? 'Quitar del carrito (ya en deseos)' : 'Guardar en deseos y quitar del carrito'}
+                        aria-label={inWishlist ? 'Quitar del carrito, ya está en deseos' : 'Guardar en deseos y quitar del carrito'}
+                      >
+                        <Heart size={16} fill={inWishlist ? 'currentColor' : 'none'}/>
+                      </button>
+                      <button
+                        type="button"
+                        className="cart-item-del"
+                        onClick={() => dispatch({ type:'CART_REMOVE', productId })}
+                        title="Eliminar del carrito"
+                        aria-label="Eliminar del carrito"
+                      >
+                        <Trash2 size={16}/>
+                      </button>
+                    </div>
                   </div>
                 )})}
+                </div>
               </div>
 
               <div className="cart-summary">
