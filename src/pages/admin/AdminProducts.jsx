@@ -1,11 +1,13 @@
-import React, { useState } from 'react'
-import { Plus, Pencil, Trash2, Eye, EyeOff, X, Check, Package } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Plus, Pencil, Trash2, Eye, EyeOff, X, Check, Package, Bell } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
 import { useAuth } from '../../context/AuthContext'
+import { fetchStockAlertCounts } from '../../lib/stockAlerts'
 import Portal from '../../components/Portal'
 import { getProductSupplierIds } from '../../lib/suppliers'
 import './AdminTable.css'
 import './AdminSuppliers.css'
+import '../../components/StockAlertForm.css'
 
 const EMPTY = { name: '', price: '', categoryId: '', supplierIds: [], image: '', description: '', stock: '', active: true }
 
@@ -14,6 +16,16 @@ export default function AdminProducts() {
   const { userCan } = useAuth()
   const [form, setForm] = useState(null)
   const [del, setDel] = useState(null)
+  const [alertCounts, setAlertCounts] = useState({})
+
+  useEffect(() => {
+    const outIds = products.filter(p => p.stock === 0).map(p => p.id)
+    if (!outIds.length) {
+      setAlertCounts({})
+      return
+    }
+    fetchStockAlertCounts(outIds).then(setAlertCounts)
+  }, [products])
 
   const canCreate = userCan('productos.crear')
   const canEdit   = userCan('productos.editar')
@@ -126,6 +138,11 @@ export default function AdminProducts() {
                 <td>{parseFloat(p.price).toFixed(2)} €</td>
                 <td>
                   <span className={`stock-badge ${p.stock <= 3 ? 'low' : ''}`}>{p.stock}</span>
+                  {p.stock === 0 && alertCounts[p.id] > 0 && (
+                    <span className="admin-alert-badge" title="Clientes esperando aviso">
+                      <Bell size={10}/> {alertCounts[p.id]}
+                    </span>
+                  )}
                 </td>
                 <td>
                   <button

@@ -1,0 +1,129 @@
+.stock-alert {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--cream);
+  margin-bottom: 24px;
+}
+
+.stock-alert--compact {
+  padding: 14px 16px;
+  margin-bottom: 0;
+}
+
+.stock-alert-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  color: var(--ink);
+}
+
+.stock-alert-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.stock-alert-sub {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.stock-alert-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stock-alert-form input {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  background: var(--white);
+}
+
+.stock-alert-btn {
+  padding: 10px 18px;
+  border-radius: 99px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  white-space: nowrap;
+  transition: background var(--transition);
+}
+
+.stock-alert-btn:hover:not(:disabled) { background: var(--accent); }
+.stock-alert-btn:disabled { opacity: 0.6; cursor: wait; }
+
+.stock-alert-active {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.stock-alert-active strong { color: var(--ink); }
+
+.stock-alert-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+  font-family: var(--font-body);
+}
+
+.stock-alert-cancel:hover:not(:disabled) { color: var(--danger); }
+
+.stock-alert-msg {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.stock-alert-msg--ok { color: var(--success); }
+.stock-alert-msg--err { color: var(--danger); }
+
+.product-card-out {
+  position: absolute;
+  inset: auto 8px 8px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  backdrop-filter: blur(4px);
+}
+
+.product-card-out:hover { border-color: var(--accent); color: var(--accent); }
+
+.detail-stock--out { color: var(--danger); }
+
+.admin-alert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #92400e;
+  background: #fef9c3;
+  padding: 2px 8px;
+  border-radius: 99px;
+  margin-left: 6px;
+}

@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import { activity } from '../lib/activity'
 import { useStore } from '../context/StoreContext'
 import { getCartQty } from '../context/store/stock'
+import StockAlertForm from '../components/StockAlertForm'
 import './ProductDetail.css'
 
 export default function ProductDetail() {
@@ -57,6 +58,7 @@ export default function ProductDetail() {
     activity.trackWishlist(product.id, !inWishlist, user?.id)
   }
 
+  const outOfStock = product.stock <= 0
   const maxQty = Math.max(0, product.stock - cartQty)
 
   return (
@@ -78,11 +80,22 @@ export default function ProductDetail() {
             <p className="detail-price">{product.price.toFixed(2)} €</p>
             <p className="detail-desc">{product.description}</p>
 
-            <div className="detail-stock">
+            <div className={`detail-stock ${outOfStock ? 'detail-stock--out' : ''}`}>
               <Package size={14}/>
               <span>{product.stock > 0 ? `${product.stock} unidades disponibles` : 'Sin stock'}</span>
             </div>
 
+            {outOfStock ? (
+              <>
+                <StockAlertForm productId={product.id} productName={product.name}/>
+                <div className="detail-actions detail-actions--solo-wish">
+                  <button type="button" className={`detail-wish ${inWishlist ? 'active' : ''}`} onClick={toggleWish} aria-label="Lista de deseos">
+                    <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'}/>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
             <div className="detail-qty-row">
               <span>Cantidad</span>
               <div className="detail-qty-controls">
@@ -105,6 +118,8 @@ export default function ProductDetail() {
                 <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'}/>
               </button>
             </div>
+              </>
+            )}
           </div>
         </div>
 

@@ -121,6 +121,7 @@
 }
 
 .detail-actions { display: flex; gap: 12px; align-items: center; }
+.detail-actions--solo-wish { margin-top: 8px; }
 
 .detail-wish {
   width: 48px;

@@ -1,9 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ShoppingBag, Heart } from 'lucide-react'
+import { ShoppingBag, Heart, Bell } from 'lucide-react'
 import { useStore } from '../context/StoreContext'
 import { canAddToCart } from '../context/store/stock'
 import './ProductCard.css'
+import './StockAlertForm.css'
 
 export default function ProductCard({ product }) {
   const { dispatch, wishlist, cart } = useStore()
@@ -34,6 +35,11 @@ export default function ProductCard({ product }) {
         <button className="product-card-cta" onClick={handleAdd} disabled={!canAdd}>
           <ShoppingBag size={16} /><span>{canAdd ? 'Añadir' : 'Sin stock'}</span>
         </button>
+        {!canAdd && (
+          <Link to={`/producto/${product.id}`} className="product-card-out" onClick={e => e.stopPropagation()}>
+            <Bell size={14}/> Avisar cuando haya stock
+          </Link>
+        )}
       </div>
       <div className="product-card-info">
         <p className="product-card-name">{product.name}</p>
