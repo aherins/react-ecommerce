@@ -58,6 +58,7 @@ export function useStore() {
     coupons: catalog.coupons,
     suppliers: catalog.suppliers,
     shippingCarriers: catalog.shippingCarriers,
+    supplierOrders: catalog.supplierOrders,
     orders: orders.orders,
     cart: cart.cart,
     wishlist: cart.wishlist,

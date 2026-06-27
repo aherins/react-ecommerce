@@ -25,6 +25,7 @@ import AdminCoupons from './pages/admin/AdminCoupons'
 import AdminCustomers from './pages/admin/AdminCustomers'
 import AdminCustomerDetail from './pages/admin/AdminCustomerDetail'
 import AdminSuppliers from './pages/admin/AdminSuppliers'
+import AdminSupplierOrders from './pages/admin/AdminSupplierOrders'
 import AdminShippingCarriers from './pages/admin/AdminShippingCarriers'
 import LegalPage from './pages/LegalPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -74,6 +75,9 @@ export default function App() {
               }/>
               <Route path="proveedores" element={
                 <RequirePermission permission="proveedores.ver"><AdminSuppliers /></RequirePermission>
+              }/>
+              <Route path="proveedores/pedidos" element={
+                <RequirePermission permission="proveedores.pedidos.ver"><AdminSupplierOrders /></RequirePermission>
               }/>
               <Route path="envios" element={
                 <RequirePermission permission="envios.ver"><AdminShippingCarriers /></RequirePermission>

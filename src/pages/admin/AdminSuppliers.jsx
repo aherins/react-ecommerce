@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
-import { Plus, Pencil, Trash2, Eye, EyeOff, X, Check, Factory, Mail, Phone } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Plus, Pencil, Trash2, Eye, EyeOff, X, Check, Factory, Mail, Phone, ShoppingCart } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
 import { useAuth } from '../../context/AuthContext'
+import { getProductSupplierIds } from '../../lib/suppliers'
 import Portal from '../../components/Portal'
 import './AdminTable.css'
+import './AdminSuppliers.css'
 
 const EMPTY = {
   name: '', contactName: '', email: '', phone: '', website: '', address: '', notes: '', active: true,
@@ -54,7 +57,7 @@ export default function AdminSuppliers() {
     dispatch({ type: 'SUPPLIER_UPDATE', supplier: { ...s, active: !s.active } })
   }
 
-  const countProducts = id => products.filter(p => p.supplierId === id).length
+  const countProducts = id => products.filter(p => getProductSupplierIds(p).includes(id)).length
 
   return (
     <div className="admin-table-page">
@@ -65,9 +68,16 @@ export default function AdminSuppliers() {
             {suppliers.length} proveedores · {suppliers.filter(s => s.active).length} activos
           </p>
         </div>
-        {canCreate && (
-          <button className="btn-add" onClick={openNew}><Plus size={16} />Nuevo proveedor</button>
-        )}
+        <div className="page-header-actions">
+          {userCan('proveedores.pedidos.ver') && (
+            <Link to="/admin/proveedores/pedidos" className="btn-secondary-outline">
+              <ShoppingCart size={16}/> Pedidos a proveedores
+            </Link>
+          )}
+          {canCreate && (
+            <button className="btn-add" onClick={openNew}><Plus size={16} />Nuevo proveedor</button>
+          )}
+        </div>
       </div>
 
       {suppliers.length > 0 && (

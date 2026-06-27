@@ -1,19 +1,23 @@
 import { supabase, hasSupabase } from '../../lib/supabase'
 import { couponToDb } from './couponMappers'
 import { supplierToDb, shippingCarrierToDb } from './partnerMappers'
+import { productToDb } from './productMappers'
+import { supplierOrderToDb } from './supplierOrderMappers'
 
 export async function syncCatalogAction(action) {
   if (!hasSupabase) return
 
   switch (action.type) {
     case 'PRODUCT_ADD': {
-      const { id, ...rest } = action.product
+      const row = productToDb(action.product)
+      const { id, ...rest } = row
       const { error } = await supabase.from('products').insert({ id, ...rest })
       if (error) console.error('PRODUCT_ADD:', error.message)
       break
     }
     case 'PRODUCT_UPDATE': {
-      const { id, ...rest } = action.product
+      const row = productToDb(action.product)
+      const { id, ...rest } = row
       const { error } = await supabase.from('products').update(rest).eq('id', id)
       if (error) console.error('PRODUCT_UPDATE:', error.message)
       break
@@ -109,6 +113,41 @@ export async function syncCatalogAction(action) {
       if (error) console.error('SHIPPING_CARRIER_DELETE:', error.message)
       break
     }
+
+    case 'SUPPLIER_ORDER_ADD': {
+      const { error } = await supabase.from('supplier_orders').insert(supplierOrderToDb(action.order))
+      if (error) console.error('SUPPLIER_ORDER_ADD:', error.message)
+      break
+    }
+    case 'SUPPLIER_ORDER_UPDATE': {
+      const { id, ...rest } = supplierOrderToDb(action.order)
+      const { error } = await supabase.from('supplier_orders').update(rest).eq('id', id)
+      if (error) console.error('SUPPLIER_ORDER_UPDATE:', error.message)
+      break
+    }
+    case 'SUPPLIER_ORDER_DELETE': {
+      const { error } = await supabase.from('supplier_orders').delete().eq('id', action.id)
+      if (error) console.error('SUPPLIER_ORDER_DELETE:', error.message)
+      break
+    }
+    case 'SUPPLIER_ORDER_ADD_INVOICE': {
+      const { data, error: selErr } = await supabase
+        .from('supplier_orders').select('invoices').eq('id', action.id).maybeSingle()
+      if (selErr) { console.error('SUPPLIER_ORDER_ADD_INVOICE:', selErr.message); break }
+      const invoices = [...(data?.invoices || []), action.invoice]
+      const { error } = await supabase.from('supplier_orders').update({ invoices }).eq('id', action.id)
+      if (error) console.error('SUPPLIER_ORDER_ADD_INVOICE:', error.message)
+      break
+    }
+    case 'SUPPLIER_ORDER_REMOVE_INVOICE': {
+      const { data, error: selErr } = await supabase
+        .from('supplier_orders').select('invoices').eq('id', action.id).maybeSingle()
+      if (selErr) { console.error('SUPPLIER_ORDER_REMOVE_INVOICE:', selErr.message); break }
+      const invoices = (data?.invoices || []).filter(inv => inv.id !== action.invoiceId)
+      const { error } = await supabase.from('supplier_orders').update({ invoices }).eq('id', action.id)
+      if (error) console.error('SUPPLIER_ORDER_REMOVE_INVOICE:', error.message)
+      break
+    }
   }
 }
 
@@ -118,4 +157,6 @@ export const CATALOG_ACTIONS = new Set([
   'SET_COUPONS', 'COUPON_ADD', 'COUPON_UPDATE', 'COUPON_TOGGLE_ACTIVE', 'COUPON_DELETE', 'COUPON_USE',
   'SET_SUPPLIERS', 'SUPPLIER_ADD', 'SUPPLIER_UPDATE', 'SUPPLIER_DELETE',
   'SET_SHIPPING_CARRIERS', 'SHIPPING_CARRIER_ADD', 'SHIPPING_CARRIER_UPDATE', 'SHIPPING_CARRIER_DELETE',
+  'SET_SUPPLIER_ORDERS', 'SUPPLIER_ORDER_ADD', 'SUPPLIER_ORDER_UPDATE', 'SUPPLIER_ORDER_DELETE',
+  'SUPPLIER_ORDER_ADD_INVOICE', 'SUPPLIER_ORDER_REMOVE_INVOICE',
 ])

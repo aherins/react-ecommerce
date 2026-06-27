@@ -61,6 +61,8 @@ export const PERMISSIONS = {
   'proveedores.crear':  ['superadmin', 'admin', 'editor'],
   'proveedores.editar': ['superadmin', 'admin', 'editor'],
   'proveedores.borrar': ['superadmin', 'admin'],
+  'proveedores.pedidos.ver':       ['superadmin', 'admin', 'editor', 'viewer'],
+  'proveedores.pedidos.gestionar': ['superadmin', 'admin', 'editor'],
 
   'envios.ver':    ['superadmin', 'admin', 'editor', 'viewer'],
   'envios.crear':  ['superadmin', 'admin', 'editor'],

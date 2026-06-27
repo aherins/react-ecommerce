@@ -80,6 +80,34 @@ export function catalogReducer(state, action) {
     case 'SHIPPING_CARRIER_DELETE':
       return { ...state, shippingCarriers: state.shippingCarriers.filter(c => c.id !== action.id) }
 
+    case 'SET_SUPPLIER_ORDERS':
+      return { ...state, supplierOrders: action.supplierOrders }
+    case 'SUPPLIER_ORDER_ADD':
+      return { ...state, supplierOrders: [...state.supplierOrders, action.order] }
+    case 'SUPPLIER_ORDER_UPDATE':
+      return {
+        ...state,
+        supplierOrders: state.supplierOrders.map(o => o.id === action.order.id ? action.order : o),
+      }
+    case 'SUPPLIER_ORDER_DELETE':
+      return { ...state, supplierOrders: state.supplierOrders.filter(o => o.id !== action.id) }
+    case 'SUPPLIER_ORDER_ADD_INVOICE':
+      return {
+        ...state,
+        supplierOrders: state.supplierOrders.map(o => {
+          if (o.id !== action.id) return o
+          return { ...o, invoices: [...(o.invoices || []), action.invoice] }
+        }),
+      }
+    case 'SUPPLIER_ORDER_REMOVE_INVOICE':
+      return {
+        ...state,
+        supplierOrders: state.supplierOrders.map(o => {
+          if (o.id !== action.id) return o
+          return { ...o, invoices: (o.invoices || []).filter(inv => inv.id !== action.invoiceId) }
+        }),
+      }
+
     default:
       return state
   }

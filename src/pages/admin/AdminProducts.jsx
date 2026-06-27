@@ -3,9 +3,11 @@ import { Plus, Pencil, Trash2, Eye, EyeOff, X, Check, Package } from 'lucide-rea
 import { useStore } from '../../context/StoreContext'
 import { useAuth } from '../../context/AuthContext'
 import Portal from '../../components/Portal'
+import { getProductSupplierIds } from '../../lib/suppliers'
 import './AdminTable.css'
+import './AdminSuppliers.css'
 
-const EMPTY = { name: '', price: '', categoryId: '', supplierId: '', image: '', description: '', stock: '', active: true }
+const EMPTY = { name: '', price: '', categoryId: '', supplierIds: [], image: '', description: '', stock: '', active: true }
 
 export default function AdminProducts() {
   const { products, categories, suppliers, dispatch } = useStore()
@@ -19,7 +21,14 @@ export default function AdminProducts() {
   const canToggle = userCan('productos.toggle')
 
   function openNew() { setForm({ ...EMPTY }) }
-  function openEdit(p) { setForm({ ...p, price: String(p.price), stock: String(p.stock) }) }
+  function openEdit(p) {
+    setForm({
+      ...p,
+      supplierIds: getProductSupplierIds(p),
+      price: String(p.price),
+      stock: String(p.stock),
+    })
+  }
   function closeForm() { setForm(null) }
 
   function handleSave() {
@@ -28,8 +37,10 @@ export default function AdminProducts() {
       ...form,
       price: parseFloat(form.price) || 0,
       stock: parseInt(form.stock) || 0,
+      supplierIds: form.supplierIds || [],
       id: form.id || `p-${Date.now()}`,
     }
+    delete product.supplierId
     if (form.id) {
       dispatch({ type: 'PRODUCT_UPDATE', product })
     } else {
@@ -48,8 +59,17 @@ export default function AdminProducts() {
   }
 
   const catName = id => categories.find(c => c.id === id)?.name ?? '—'
-  const supplierName = id => suppliers.find(s => s.id === id)?.name ?? '—'
-  const activeSuppliers = suppliers.filter(s => s.active !== false)
+  const toggleSupplier = (supplierId) => {
+    setForm(f => {
+      const ids = f.supplierIds || []
+      return {
+        ...f,
+        supplierIds: ids.includes(supplierId)
+          ? ids.filter(id => id !== supplierId)
+          : [...ids, supplierId],
+      }
+    })
+  }
 
   return (
     <div className="admin-table-page">
@@ -79,7 +99,7 @@ export default function AdminProducts() {
             <tr>
               <th>Producto</th>
               <th>Categoría</th>
-              <th>Proveedor</th>
+              <th>Proveedores</th>
               <th>Precio</th>
               <th>Stock</th>
               <th>Estado</th>
@@ -96,7 +116,13 @@ export default function AdminProducts() {
                   </div>
                 </td>
                 <td>{catName(p.categoryId)}</td>
-                <td>{supplierName(p.supplierId)}</td>
+                <td>
+                  <div className="supplier-tags">
+                    {getProductSupplierIds(p).length === 0 ? '—' : getProductSupplierIds(p).map(id => (
+                      <span key={id} className="supplier-tag">{suppliers.find(s => s.id === id)?.name ?? id}</span>
+                    ))}
+                  </div>
+                </td>
                 <td>{parseFloat(p.price).toFixed(2)} €</td>
                 <td>
                   <span className={`stock-badge ${p.stock <= 3 ? 'low' : ''}`}>{p.stock}</span>
@@ -154,14 +180,23 @@ export default function AdminProducts() {
                 </select>
               </div>
               <div className="form-row">
-                <label>Proveedor</label>
-                <select value={form.supplierId || ''} onChange={e => setForm(f => ({...f, supplierId: e.target.value}))}>
-                  <option value="">Sin proveedor</option>
-                  {activeSuppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  {form.supplierId && !activeSuppliers.some(s => s.id === form.supplierId) && (
-                    <option value={form.supplierId}>{supplierName(form.supplierId)} (inactivo)</option>
-                  )}
-                </select>
+                <label>Proveedores que pueden abastecer</label>
+                {suppliers.length === 0 ? (
+                  <p className="form-hint">No hay proveedores. Créalos en la sección Proveedores.</p>
+                ) : (
+                  <div className="supplier-checklist">
+                    {suppliers.map(s => (
+                      <label key={s.id} className="supplier-check">
+                        <input
+                          type="checkbox"
+                          checked={(form.supplierIds || []).includes(s.id)}
+                          onChange={() => toggleSupplier(s.id)}
+                        />
+                        {s.name}{s.active === false && ' (inactivo)'}
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="form-row">
                 <label>URL de imagen</label>

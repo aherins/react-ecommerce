@@ -1,0 +1,98 @@
+.supplier-orders-filters { margin-bottom: 20px; }
+.supplier-orders-filters select {
+  padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-family: var(--font-body); font-size: 14px; background: var(--white); min-width: 220px;
+}
+
+.supplier-checklist {
+  display: flex; flex-direction: column; gap: 8px;
+  max-height: 160px; overflow-y: auto;
+  padding: 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--paper);
+}
+.supplier-check {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; cursor: pointer;
+}
+.supplier-check input { accent-color: var(--ink); }
+.supplier-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.supplier-tag {
+  font-size: 11px; font-weight: 600; padding: 2px 8px;
+  border-radius: 99px; background: var(--cream); color: var(--muted);
+}
+
+.spo-status {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 3px 8px; border-radius: 99px;
+}
+.spo-status--draft { background: #f3f4f6; color: #374151; }
+.spo-status--sent { background: #dbeafe; color: #1d4ed8; }
+.spo-status--received { background: #dcfce7; color: #166534; }
+.spo-status--cancelled { background: #fee2e2; color: #991b1b; }
+
+.modal-lg { max-width: 640px; }
+
+.spo-lines-title { font-size: 14px; font-weight: 600; margin: 20px 0 12px; }
+.spo-line-row {
+  display: grid; grid-template-columns: 1fr 70px 100px auto; gap: 8px;
+  align-items: center; margin-bottom: 8px;
+}
+.spo-line-row select,
+.spo-line-row input {
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-family: var(--font-body); font-size: 13px;
+}
+.spo-line-remove { color: var(--muted); padding: 4px; }
+.spo-add-line {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--accent); margin-top: 4px;
+}
+.spo-form-total {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border);
+  font-size: 15px;
+}
+
+.spo-detail-meta {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+  padding: 16px; background: var(--cream); border-radius: var(--radius); margin-bottom: 16px;
+}
+.spo-detail-meta span { display: block; font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.spo-detail-meta strong { font-size: 14px; }
+.spo-detail-notes { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.spo-detail-line {
+  display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px;
+  padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+}
+.spo-detail-line strong { text-align: right; }
+
+.spo-invoice-list { list-style: none; margin: 0 0 16px; padding: 0; }
+.spo-invoice-item {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 8px; font-size: 13px;
+}
+.spo-invoice-remove { color: var(--danger); margin-left: auto; }
+.spo-upload-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.spo-upload-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border: 1px dashed var(--border); border-radius: var(--radius);
+  font-size: 13px; font-weight: 500; cursor: pointer; color: var(--ink);
+}
+.spo-upload-btn:hover { border-color: var(--ink); background: var(--cream); }
+.spo-upload-error { color: var(--danger); font-size: 13px; margin-top: 8px; }
+
+.page-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-secondary-outline {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 18px; border-radius: 99px; border: 1px solid var(--border);
+  font-size: 13px; font-weight: 500; color: var(--ink); font-family: var(--font-body);
+  transition: all var(--transition);
+}
+.btn-secondary-outline:hover { border-color: var(--ink); background: var(--cream); }
+
+@media (max-width: 640px) {
+  .spo-line-row { grid-template-columns: 1fr; }
+  .spo-detail-line { grid-template-columns: 1fr 1fr; }
+}
