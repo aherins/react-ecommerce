@@ -9,6 +9,7 @@
 .stock-alert--compact {
   flex: 1;
   min-width: 0;
+  width: 100%;
   padding: 0;
   margin-bottom: 0;
   border: none;
@@ -19,7 +20,7 @@
 .stock-alert-inline-form {
   display: flex;
   gap: 6px;
-  flex: 1;
+  width: 100%;
   min-width: 0;
 }
 
@@ -72,22 +73,24 @@
 .stock-alert-inline-btn:hover:not(:disabled) { background: var(--accent); }
 .stock-alert-inline-btn:disabled { opacity: 0.6; cursor: wait; }
 
+.stock-alert-inline-btn--full {
+  width: 100%;
+}
+
+.stock-alert-inline-btn--step {
+  flex: 0 0 auto;
+  padding: 0 14px;
+}
+
 .stock-alert-inline-btn--ghost {
+  width: 100%;
   background: var(--cream);
   color: var(--muted);
   cursor: wait;
 }
 
-.stock-alert-inline-form:has(input) .stock-alert-inline-btn {
-  flex: 0 0 auto;
-  padding: 0 14px;
-}
-
-.stock-alert-inline-form:has(input) .stock-alert-inline-btn span {
-  display: none;
-}
-
 .stock-alert-inline-active {
+  width: 100%;
   flex: 1;
   display: flex;
   align-items: center;

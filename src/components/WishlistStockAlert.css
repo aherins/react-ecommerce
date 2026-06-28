@@ -1,0 +1,115 @@
+.wishlist-img-wrap {
+  position: relative;
+}
+
+.wishlist-stock-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #86efac;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--success);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  pointer-events: auto;
+}
+
+.wishlist-stock-badge span {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.wishlist-stock-badge-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--muted);
+  transition: all var(--transition);
+}
+
+.wishlist-stock-badge-cancel:hover:not(:disabled) {
+  color: var(--danger);
+  background: #fee2e2;
+}
+
+.wishlist-img-wrap::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 40%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.15), transparent);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.wishlist-img-wrap:has(.wishlist-stock-badge)::after {
+  opacity: 1;
+}
+
+.wishlist-stock-form {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.wishlist-stock-form input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  background: var(--white);
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.wishlist-stock-form input:focus {
+  border-color: var(--ink);
+}
+
+.wishlist-stock-form input.has-error {
+  border-color: var(--danger);
+}
+
+.wishlist-stock-bell-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  transition: background var(--transition);
+}
+
+.wishlist-stock-bell-btn:hover:not(:disabled) {
+  background: var(--accent);
+}
+
+.wishlist-stock-bell-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
