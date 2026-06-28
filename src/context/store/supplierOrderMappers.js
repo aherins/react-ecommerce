@@ -14,6 +14,7 @@ export function supplierOrderToDb(o) {
     created_at:   o.createdAt || new Date().toISOString(),
     expected_at:  o.expectedAt || null,
     received_at:  o.receivedAt || null,
+    stock_locked_at: o.stockLockedAt || null,
   }
 }
 
@@ -30,5 +31,6 @@ export function supplierOrderFromDb(r) {
     createdAt:  r.created_at,
     expectedAt: r.expected_at || null,
     receivedAt: r.received_at || null,
+    stockLockedAt: r.stock_locked_at || null,
   }
 }

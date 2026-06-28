@@ -23,11 +23,14 @@ create table if not exists public.supplier_orders (
   invoices     jsonb not null default '[]'::jsonb,
   created_at   timestamptz not null default now(),
   expected_at  timestamptz,
-  received_at  timestamptz
+  received_at  timestamptz,
+  stock_locked_at timestamptz
 );
 
 create index if not exists supplier_orders_supplier_idx on public.supplier_orders (supplier_id);
 create index if not exists supplier_orders_created_idx on public.supplier_orders (created_at desc);
+
+alter table public.supplier_orders add column if not exists stock_locked_at timestamptz;
 
 alter table public.supplier_orders enable row level security;
 

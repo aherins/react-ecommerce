@@ -62,10 +62,42 @@
 .spo-detail-meta strong { font-size: 14px; }
 .spo-detail-notes { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
 .spo-detail-line {
-  display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px;
+  display: grid; grid-template-columns: 1fr auto auto auto minmax(120px, auto); gap: 12px;
+  align-items: center;
   padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
 }
 .spo-detail-line strong { text-align: right; }
+
+.spo-stock-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 10px; border-radius: 99px;
+  background: var(--ink); color: var(--paper);
+  font-size: 11px; font-weight: 600; font-family: var(--font-body);
+  white-space: nowrap;
+  transition: background var(--transition);
+}
+.spo-stock-btn:hover { background: var(--success); }
+
+.spo-stock-applied {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 600; color: var(--success);
+  white-space: nowrap;
+}
+
+.spo-locked-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-left: 6px; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 2px 7px; border-radius: 99px;
+  background: #f3f4f6; color: #374151;
+}
+
+.spo-locked-note {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 12px; padding: 10px 12px;
+  border-radius: var(--radius); background: #f3f4f6;
+  font-size: 13px; color: var(--muted);
+}
 
 .spo-invoice-list { list-style: none; margin: 0 0 16px; padding: 0; }
 .spo-invoice-item {

@@ -1,8 +1,9 @@
 import { supabase, hasSupabase } from '../../lib/supabase'
 import { couponToDb } from './couponMappers'
 import { supplierToDb, shippingCarrierToDb } from './partnerMappers'
-import { productToDb } from './productMappers'
-import { supplierOrderToDb } from './supplierOrderMappers'
+import { productToDb, mapProductsFromDb } from './productMappers'
+import { supplierOrderToDb, supplierOrderFromDb } from './supplierOrderMappers'
+import { applyStockToSupplierOrderLine } from '../../lib/suppliers'
 
 export async function syncCatalogAction(action) {
   if (!hasSupabase) return
@@ -132,8 +133,9 @@ export async function syncCatalogAction(action) {
     }
     case 'SUPPLIER_ORDER_ADD_INVOICE': {
       const { data, error: selErr } = await supabase
-        .from('supplier_orders').select('invoices').eq('id', action.id).maybeSingle()
+        .from('supplier_orders').select('invoices,stock_locked_at').eq('id', action.id).maybeSingle()
       if (selErr) { console.error('SUPPLIER_ORDER_ADD_INVOICE:', selErr.message); break }
+      if (data?.stock_locked_at) break
       const invoices = [...(data?.invoices || []), action.invoice]
       const { error } = await supabase.from('supplier_orders').update({ invoices }).eq('id', action.id)
       if (error) console.error('SUPPLIER_ORDER_ADD_INVOICE:', error.message)
@@ -141,11 +143,44 @@ export async function syncCatalogAction(action) {
     }
     case 'SUPPLIER_ORDER_REMOVE_INVOICE': {
       const { data, error: selErr } = await supabase
-        .from('supplier_orders').select('invoices').eq('id', action.id).maybeSingle()
+        .from('supplier_orders').select('invoices,stock_locked_at').eq('id', action.id).maybeSingle()
       if (selErr) { console.error('SUPPLIER_ORDER_REMOVE_INVOICE:', selErr.message); break }
+      if (data?.stock_locked_at) break
       const invoices = (data?.invoices || []).filter(inv => inv.id !== action.invoiceId)
       const { error } = await supabase.from('supplier_orders').update({ invoices }).eq('id', action.id)
       if (error) console.error('SUPPLIER_ORDER_REMOVE_INVOICE:', error.message)
+      break
+    }
+    case 'SUPPLIER_ORDER_APPLY_STOCK': {
+      const { data: orderRow, error: orderErr } = await supabase
+        .from('supplier_orders').select('*').eq('id', action.orderId).maybeSingle()
+      if (orderErr || !orderRow) {
+        console.error('SUPPLIER_ORDER_APPLY_STOCK:', orderErr?.message || 'Pedido no encontrado')
+        break
+      }
+      const order = supplierOrderFromDb(orderRow)
+      const line = order.items?.[action.lineIndex]
+      if (!line?.productId) break
+      const { data: productRow, error: productErr } = await supabase
+        .from('products').select('*').eq('id', line.productId).maybeSingle()
+      if (productErr || !productRow) {
+        console.error('SUPPLIER_ORDER_APPLY_STOCK:', productErr?.message || 'Producto no encontrado')
+        break
+      }
+      const result = applyStockToSupplierOrderLine(
+        order,
+        action.lineIndex,
+        mapProductsFromDb([productRow]),
+      )
+      if (!result) break
+      const { error: stockErr } = await supabase
+        .from('products')
+        .update({ stock: result.product.stock })
+        .eq('id', result.product.id)
+      if (stockErr) console.error('SUPPLIER_ORDER_APPLY_STOCK stock:', stockErr.message)
+      const { id, ...rest } = supplierOrderToDb(result.order)
+      const { error: orderUpdErr } = await supabase.from('supplier_orders').update(rest).eq('id', id)
+      if (orderUpdErr) console.error('SUPPLIER_ORDER_APPLY_STOCK order:', orderUpdErr.message)
       break
     }
   }
@@ -158,5 +193,5 @@ export const CATALOG_ACTIONS = new Set([
   'SET_SUPPLIERS', 'SUPPLIER_ADD', 'SUPPLIER_UPDATE', 'SUPPLIER_DELETE',
   'SET_SHIPPING_CARRIERS', 'SHIPPING_CARRIER_ADD', 'SHIPPING_CARRIER_UPDATE', 'SHIPPING_CARRIER_DELETE',
   'SET_SUPPLIER_ORDERS', 'SUPPLIER_ORDER_ADD', 'SUPPLIER_ORDER_UPDATE', 'SUPPLIER_ORDER_DELETE',
-  'SUPPLIER_ORDER_ADD_INVOICE', 'SUPPLIER_ORDER_REMOVE_INVOICE',
+  'SUPPLIER_ORDER_ADD_INVOICE', 'SUPPLIER_ORDER_REMOVE_INVOICE', 'SUPPLIER_ORDER_APPLY_STOCK',
 ])

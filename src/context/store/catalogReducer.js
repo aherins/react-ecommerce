@@ -1,3 +1,5 @@
+import { applyStockToSupplierOrderLine } from '../../lib/suppliers'
+
 export function catalogReducer(state, action) {
   switch (action.type) {
     case 'SET_PRODUCTS':
@@ -84,18 +86,27 @@ export function catalogReducer(state, action) {
       return { ...state, supplierOrders: action.supplierOrders }
     case 'SUPPLIER_ORDER_ADD':
       return { ...state, supplierOrders: [...state.supplierOrders, action.order] }
-    case 'SUPPLIER_ORDER_UPDATE':
+    case 'SUPPLIER_ORDER_UPDATE': {
+      const existing = state.supplierOrders.find(o => o.id === action.order.id)
+      if (existing?.stockLockedAt) return state
       return {
         ...state,
         supplierOrders: state.supplierOrders.map(o => o.id === action.order.id ? action.order : o),
       }
+    }
     case 'SUPPLIER_ORDER_DELETE':
-      return { ...state, supplierOrders: state.supplierOrders.filter(o => o.id !== action.id) }
+      return {
+        ...state,
+        supplierOrders: state.supplierOrders.filter(o => {
+          if (o.id !== action.id) return true
+          return !o.stockLockedAt
+        }),
+      }
     case 'SUPPLIER_ORDER_ADD_INVOICE':
       return {
         ...state,
         supplierOrders: state.supplierOrders.map(o => {
-          if (o.id !== action.id) return o
+          if (o.id !== action.id || o.stockLockedAt) return o
           return { ...o, invoices: [...(o.invoices || []), action.invoice] }
         }),
       }
@@ -103,10 +114,24 @@ export function catalogReducer(state, action) {
       return {
         ...state,
         supplierOrders: state.supplierOrders.map(o => {
-          if (o.id !== action.id) return o
+          if (o.id !== action.id || o.stockLockedAt) return o
           return { ...o, invoices: (o.invoices || []).filter(inv => inv.id !== action.invoiceId) }
         }),
       }
+    case 'SUPPLIER_ORDER_APPLY_STOCK': {
+      const order = state.supplierOrders.find(o => o.id === action.orderId)
+      const result = applyStockToSupplierOrderLine(order, action.lineIndex, state.products)
+      if (!result) return state
+      return {
+        ...state,
+        products: state.products.map(p => (
+          p.id === result.product.id ? result.product : p
+        )),
+        supplierOrders: state.supplierOrders.map(o => (
+          o.id === result.order.id ? result.order : o
+        )),
+      }
+    }
 
     default:
       return state

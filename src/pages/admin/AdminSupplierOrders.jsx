@@ -1,17 +1,21 @@
 import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Plus, Pencil, Trash2, X, Check, ArrowLeft, FileText, Upload, ExternalLink, ShoppingCart,
+  Plus, Pencil, Trash2, X, Check, ArrowLeft, FileText, Upload, ExternalLink, ShoppingCart, Package, Lock,
 } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
 import { useAuth } from '../../context/AuthContext'
 import Portal from '../../components/Portal'
+import { notifyStockRestored } from '../../lib/emailApi'
 import {
   SUPPLIER_ORDER_STATUS,
   SUPPLIER_ORDER_STATUS_OPTIONS,
   productSuppliesFrom,
   calcSupplierOrderTotal,
   readFileAsDataUrl,
+  isSupplierOrderLocked,
+  canApplyStockToLine,
+  applyStockToSupplierOrderLine,
 } from '../../lib/suppliers'
 import './AdminTable.css'
 import './AdminSuppliers.css'
@@ -57,6 +61,7 @@ export default function AdminSupplierOrders() {
   }
 
   function openEdit(order) {
+    if (isSupplierOrderLocked(order)) return
     setForm({
       ...order,
       expectedAt: order.expectedAt ? order.expectedAt.slice(0, 10) : '',
@@ -105,6 +110,8 @@ export default function AdminSupplierOrders() {
   }
 
   function handleDelete(id) {
+    const order = supplierOrders.find(o => o.id === id)
+    if (isSupplierOrderLocked(order)) return
     dispatch({ type: 'SUPPLIER_ORDER_DELETE', id })
     setDel(null)
     if (detail?.id === id) setDetail(null)
@@ -129,6 +136,8 @@ export default function AdminSupplierOrders() {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
+    const order = supplierOrders.find(o => o.id === orderId)
+    if (isSupplierOrderLocked(order)) return
     setUploadError('')
     if (file.size > 2 * 1024 * 1024) {
       setUploadError('La factura no puede superar 2 MB.')
@@ -158,10 +167,30 @@ export default function AdminSupplierOrders() {
   }
 
   function removeInvoice(orderId, invoiceId) {
+    const order = supplierOrders.find(o => o.id === orderId)
+    if (isSupplierOrderLocked(order)) return
     dispatch({ type: 'SUPPLIER_ORDER_REMOVE_INVOICE', id: orderId, invoiceId })
     setDetail(d => d?.id === orderId
       ? { ...d, invoices: (d.invoices || []).filter(inv => inv.id !== invoiceId) }
       : d)
+  }
+
+  async function handleApplyStock(orderId, lineIndex) {
+    const order = supplierOrders.find(o => o.id === orderId)
+    const result = applyStockToSupplierOrderLine(order, lineIndex, products)
+    if (!result) return
+
+    await dispatch({ type: 'SUPPLIER_ORDER_APPLY_STOCK', orderId, lineIndex })
+    setDetail(result.order)
+
+    if (result.prevStock === 0 && result.product.stock > 0) {
+      notifyStockRestored({
+        productId: result.product.id,
+        productName: result.product.name,
+        productPrice: result.product.price,
+        image: result.product.image,
+      })
+    }
   }
 
   const formTotal = form ? calcSupplierOrderTotal(
@@ -225,7 +254,14 @@ export default function AdminSupplierOrders() {
                   <td><strong>{o.reference || o.id.slice(-8).toUpperCase()}</strong></td>
                   <td>{supplierName(o.supplierId)}</td>
                   <td>{fmtDate(o.createdAt)}</td>
-                  <td><span className={`spo-status spo-status--${o.status}`}>{SUPPLIER_ORDER_STATUS[o.status]}</span></td>
+                  <td>
+                    <span className={`spo-status spo-status--${o.status}`}>{SUPPLIER_ORDER_STATUS[o.status]}</span>
+                    {isSupplierOrderLocked(o) && (
+                      <span className="spo-locked-tag" title="Stock aplicado · pedido cerrado">
+                        <Lock size={11}/> Cerrado
+                      </span>
+                    )}
+                  </td>
                   <td>{o.total?.toFixed(2)} €</td>
                   <td>{(o.invoices || []).length || '—'}</td>
                   <td>
@@ -233,7 +269,7 @@ export default function AdminSupplierOrders() {
                       <button className="action-btn edit" onClick={() => setDetail(o)} title="Ver detalle">
                         <FileText size={14}/>
                       </button>
-                      {canManage && (
+                      {canManage && !isSupplierOrderLocked(o) && (
                         <>
                           <button className="action-btn edit" onClick={() => openEdit(o)} title="Editar">
                             <Pencil size={14}/>
@@ -394,8 +430,29 @@ export default function AdminSupplierOrders() {
                     <span>× {line.qty}</span>
                     <span>{line.unitCost?.toFixed(2)} €/ud</span>
                     <strong>{(line.qty * line.unitCost).toFixed(2)} €</strong>
+                    {detail.status === 'received' && (
+                      line.stockAppliedAt ? (
+                        <span className="spo-stock-applied">
+                          <Check size={13}/> Stock +{line.qty}
+                        </span>
+                      ) : canManage && !isSupplierOrderLocked(detail) ? (
+                        <button
+                          type="button"
+                          className="spo-stock-btn"
+                          onClick={() => handleApplyStock(detail.id, i)}
+                        >
+                          <Package size={13}/> Actualizar stock
+                        </button>
+                      ) : null
+                    )}
                   </div>
                 ))}
+
+                {isSupplierOrderLocked(detail) && (
+                  <p className="spo-locked-note">
+                    <Lock size={14}/> Pedido cerrado: el stock ya se aplicó y no se puede editar.
+                  </p>
+                )}
 
                 <h3 className="spo-lines-title">Facturas</h3>
                 {(detail.invoices || []).length === 0 && (
@@ -410,7 +467,7 @@ export default function AdminSupplierOrders() {
                       <a href={inv.fileUrl} target="_blank" rel="noreferrer" className="tracking-preview-link">
                         <ExternalLink size={14}/> Ver
                       </a>
-                      {canManage && (
+                      {canManage && !isSupplierOrderLocked(detail) && (
                         <button
                           type="button"
                           className="spo-invoice-remove"
@@ -422,7 +479,7 @@ export default function AdminSupplierOrders() {
                     </li>
                   ))}
                 </ul>
-                {canManage && (
+                {canManage && !isSupplierOrderLocked(detail) && (
                   <div className="spo-upload-row">
                     <label className="spo-upload-btn">
                       <Upload size={15}/> Adjuntar factura
@@ -439,7 +496,7 @@ export default function AdminSupplierOrders() {
                 {uploadError && <p className="spo-upload-error">{uploadError}</p>}
               </div>
               <div className="modal-footer">
-                {canManage && (
+                {canManage && !isSupplierOrderLocked(detail) && (
                   <button className="btn-save" onClick={() => { openEdit(detail); setDetail(null) }}>
                     <Pencil size={15}/> Editar pedido
                   </button>
