@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, Eye, EyeOff, X, Check, Package, Bell } from 'luci
 import { useStore } from '../../context/StoreContext'
 import { useAuth } from '../../context/AuthContext'
 import { fetchStockAlertCounts } from '../../lib/stockAlerts'
+import { notifyStockRestored } from '../../lib/emailApi'
 import Portal from '../../components/Portal'
 import { getProductSupplierIds } from '../../lib/suppliers'
 import './AdminTable.css'
@@ -45,6 +46,7 @@ export default function AdminProducts() {
 
   function handleSave() {
     if (!form.name || !form.price) return
+    const prevProduct = form.id ? products.find(p => p.id === form.id) : null
     const product = {
       ...form,
       price: parseFloat(form.price) || 0,
@@ -57,6 +59,14 @@ export default function AdminProducts() {
       dispatch({ type: 'PRODUCT_UPDATE', product })
     } else {
       dispatch({ type: 'PRODUCT_ADD', product })
+    }
+    if (prevProduct?.stock === 0 && product.stock > 0) {
+      notifyStockRestored({
+        productId: product.id,
+        productName: product.name,
+        productPrice: product.price,
+        image: product.image,
+      })
     }
     closeForm()
   }

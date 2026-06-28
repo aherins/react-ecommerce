@@ -245,7 +245,7 @@ export default function AdminUsers() {
                     <label><KeyRound size={13}/> Contraseña inicial</label>
                     <PasswordField value={password} onChange={setPassword} />
                   </div>
-                  <p className="form-hint">Se crea la cuenta en Supabase con el rol elegido. Comparte la contraseña con el usuario.</p>
+                  <p className="form-hint">Se crea la cuenta en Supabase con el rol elegido. Si Resend está configurado, se envía un email con las credenciales.</p>
                 </>
               )}
               {modal.mode === 'edit' && (

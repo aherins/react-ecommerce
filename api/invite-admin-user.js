@@ -1,8 +1,17 @@
 import { adminHeaders, getSupabaseConfig, verifySuperadmin } from './supabaseAdmin.js'
+import { getResendConfig, sendResendEmail } from './resendClient.js'
+import { welcomeStaffHtml } from './emailTemplates.js'
 
 export const config = { runtime: 'edge' }
 
 const VALID_ROLES = ['superadmin', 'admin', 'editor', 'viewer']
+
+const ROLE_LABELS = {
+  superadmin: 'Superadmin',
+  admin: 'Administrador',
+  editor: 'Editor',
+  viewer: 'Visualizador',
+}
 
 function validatePassword(password) {
   if (password.length < 8) return 'La contraseña debe tener al menos 8 caracteres.'
@@ -93,5 +102,25 @@ export default async function handler(req) {
     }),
   })
 
-  return json({ ok: true, user_id: userId, email, role })
+  let emailSent = false
+  try {
+    const { siteUrl, storeName } = getResendConfig()
+    const result = await sendResendEmail({
+      to: email,
+      subject: `Acceso al panel — ${storeName}`,
+      html: welcomeStaffHtml({
+        name,
+        email,
+        password,
+        role: ROLE_LABELS[role] || role,
+        loginUrl: `${siteUrl}/admin`,
+        storeName,
+      }),
+    })
+    emailSent = !result.skipped
+  } catch (err) {
+    console.warn('Welcome email:', err.message)
+  }
+
+  return json({ ok: true, user_id: userId, email, role, emailSent })
 }
