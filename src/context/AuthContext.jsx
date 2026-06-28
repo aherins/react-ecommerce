@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase, hasSupabase } from '../lib/supabase'
+import { getPasswordValidation } from '../lib/password'
 import { can, DEMO_USERS } from '../lib/roles'
 import { customerSync } from '../lib/customerSync'
 
@@ -97,6 +98,8 @@ export function AuthProvider({ children }) {
 
   async function signUp(email, password, metadata = {}) {
     if (!hasSupabase) return { error: { message: 'Registro no disponible en modo demo' } }
+    const pw = getPasswordValidation(password)
+    if (!pw.valid) return { error: { message: pw.message } }
     const result = await supabase.auth.signUp({ email, password, options: { data: metadata } })
     if (!result.error && result.data.user) {
       await supabase.from('profiles').upsert({

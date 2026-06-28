@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { LogIn, UserPlus, Store } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import PasswordField from '../components/PasswordField'
+import { getPasswordValidation } from '../lib/password'
 import './AuthPage.css'
 
 function GoogleIcon() {
@@ -91,7 +93,10 @@ function RegisterForm({ onSwitch }) {
   const [loadingG, setLoadingG] = useState(false)
 
   async function handleSubmit(e) {
-    e.preventDefault(); setError(''); setLoading(true)
+    e.preventDefault(); setError('')
+    const pw = getPasswordValidation(password)
+    if (!pw.valid) { setError(pw.message); return }
+    setLoading(true)
     const { error } = await signUp(email, password, { full_name: name })
     setLoading(false)
     if (error) { setError(error.message); return }
@@ -130,7 +135,13 @@ function RegisterForm({ onSwitch }) {
         <div className="field"><label>Email</label>
           <input type="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="tu@email.com"/></div>
         <div className="field"><label>Contraseña</label>
-          <input type="password" required minLength={6} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Mínimo 6 caracteres"/></div>
+          <PasswordField
+            value={password}
+            onChange={setPassword}
+            placeholder="Contraseña segura"
+            autoComplete="new-password"
+          />
+        </div>
         {error && <p className="auth-error">{error}</p>}
         <button className="submit-btn" type="submit" disabled={loading}>
           {loading ? <span className="spinner"/> : <><UserPlus size={16}/>Crear cuenta</>}

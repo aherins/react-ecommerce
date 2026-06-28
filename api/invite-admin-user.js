@@ -4,6 +4,15 @@ export const config = { runtime: 'edge' }
 
 const VALID_ROLES = ['superadmin', 'admin', 'editor', 'viewer']
 
+function validatePassword(password) {
+  if (password.length < 8) return 'La contraseña debe tener al menos 8 caracteres.'
+  if (!/[a-z]/.test(password)) return 'La contraseña debe incluir al menos una minúscula.'
+  if (!/[A-Z]/.test(password)) return 'La contraseña debe incluir al menos una mayúscula.'
+  if (!/[0-9]/.test(password)) return 'La contraseña debe incluir al menos un número.'
+  if (!/[^a-zA-Z0-9]/.test(password)) return 'La contraseña debe incluir al menos un carácter especial.'
+  return null
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -39,7 +48,8 @@ export default async function handler(req) {
 
   if (!email) return json({ error: 'Introduce un email.' }, 400)
   if (!VALID_ROLES.includes(role)) return json({ error: 'Rol no válido.' }, 400)
-  if (password.length < 8) return json({ error: 'La contraseña debe tener al menos 8 caracteres.' }, 400)
+  const passwordError = validatePassword(password)
+  if (passwordError) return json({ error: passwordError }, 400)
 
   const headers = adminHeaders(serviceKey)
 

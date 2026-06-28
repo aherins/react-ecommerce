@@ -5,6 +5,8 @@ import { supabase, hasSupabase } from '../../lib/supabase'
 import { createAdminUser, fetchAdminUsers } from '../../lib/adminUsersApi'
 import { ROLES, ROLE_LABELS, ROLE_COLORS, DEMO_USERS } from '../../lib/roles'
 import Portal from '../../components/Portal'
+import PasswordField from '../../components/PasswordField'
+import { getPasswordValidation } from '../../lib/password'
 import '../admin/AdminTable.css'
 import './AdminUsers.css'
 
@@ -102,7 +104,8 @@ export default function AdminUsers() {
 
   async function handleInvite() {
     if (!email.trim()) { setError('Introduce un email.'); return }
-    if (password.length < 8) { setError('La contraseña debe tener al menos 8 caracteres.'); return }
+    const pw = getPasswordValidation(password)
+    if (!pw.valid) { setError(pw.message); return }
     setSaving(true); setError('')
     if (!hasSupabase) {
       setUsers(prev => [...prev, {
@@ -240,8 +243,7 @@ export default function AdminUsers() {
                   </div>
                   <div className="form-row">
                     <label><KeyRound size={13}/> Contraseña inicial</label>
-                    <input type="password" value={password} onChange={e=>setPassword(e.target.value)}
-                      placeholder="Mínimo 8 caracteres" autoComplete="new-password"/>
+                    <PasswordField value={password} onChange={setPassword} />
                   </div>
                   <p className="form-hint">Se crea la cuenta en Supabase con el rol elegido. Comparte la contraseña con el usuario.</p>
                 </>
