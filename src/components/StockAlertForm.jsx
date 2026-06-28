@@ -75,15 +75,68 @@ export default function StockAlertForm({ productId, productName, compact = false
     setMessage('Has cancelado el aviso de stock.')
   }
 
-  if (loading) return null
+  if (loading) {
+    if (compact) {
+      return <div className="stock-alert stock-alert--compact" aria-busy="true">
+        <div className="stock-alert-inline-btn stock-alert-inline-btn--ghost">…</div>
+      </div>
+    }
+    return null
+  }
+
+  if (compact) {
+    return (
+      <div className="stock-alert stock-alert--compact">
+        {subscribed ? (
+          <div className="stock-alert-inline-active" title={email}>
+            <CheckCircle size={14} aria-hidden="true"/>
+            <span className="stock-alert-inline-label">Aviso activo</span>
+            <button
+              type="button"
+              className="stock-alert-inline-cancel"
+              onClick={handleUnsubscribe}
+              disabled={submitting}
+              aria-label="Cancelar aviso de stock"
+            >
+              <BellOff size={13}/>
+            </button>
+          </div>
+        ) : (
+          <form className="stock-alert-inline-form" onSubmit={handleSubscribe}>
+            {!user?.email && (
+              <input
+                type="email"
+                value={email}
+                onChange={e => { setEmail(e.target.value); setError('') }}
+                placeholder="tu@email.com"
+                required
+                aria-label="Email para aviso de stock"
+                className={error ? 'has-error' : ''}
+              />
+            )}
+            <button
+              type="submit"
+              className="stock-alert-inline-btn"
+              disabled={submitting}
+              title={error || undefined}
+              aria-label="Avisar cuando haya stock"
+            >
+              <Bell size={15} aria-hidden="true"/>
+              <span>{submitting ? 'Guardando…' : 'Avisar cuando haya stock'}</span>
+            </button>
+          </form>
+        )}
+      </div>
+    )
+  }
 
   return (
-    <div className={`stock-alert ${compact ? 'stock-alert--compact' : ''}`}>
+    <div className="stock-alert">
       <div className="stock-alert-head">
-        <Bell size={compact ? 16 : 18}/>
+        <Bell size={18}/>
         <div>
           <p className="stock-alert-title">Avisar cuando haya stock</p>
-          {!compact && productName && (
+          {productName && (
             <p className="stock-alert-sub">Te escribiremos a tu email cuando «{productName}» esté disponible.</p>
           )}
         </div>

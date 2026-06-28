@@ -25,7 +25,8 @@
 .wish-name:hover { color: var(--accent); }
 .wish-price { font-size: 14px; color: var(--muted); margin-top: 4px; }
 
-.wishlist-actions { display: flex; gap: 8px; padding: 12px 16px 16px; }
+.wishlist-actions { display: flex; align-items: center; gap: 8px; padding: 12px 16px 16px; }
+.wishlist-actions > .stock-alert--compact { flex: 1; min-width: 0; }
 .wish-add-btn {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
   background: var(--ink); color: var(--paper); padding: 8px 12px;
