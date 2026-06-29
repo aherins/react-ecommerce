@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { LogIn, Info, Store } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import PasswordField from '../../components/PasswordField'
 import { supabase } from '../../lib/supabase'
 import { DEMO_USERS, ROLE_LABELS, ROLE_COLORS } from '../../lib/roles'
 import './Login.css'
@@ -97,8 +98,14 @@ export default function Login() {
           </div>
           <div className="form-row">
             <label>Contraseña</label>
-            <input type="password" required autoComplete="current-password"
-              value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"/>
+            <PasswordField
+              value={password}
+              onChange={setPassword}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              showRules={false}
+              showGenerate={false}
+            />
           </div>
           {error && <p className="login-error">{error}</p>}
           {resetSent && <p className="login-success">Revisa tu email para restablecer la contraseña.</p>}

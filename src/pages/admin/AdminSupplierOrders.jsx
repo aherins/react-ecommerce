@@ -17,6 +17,7 @@ import {
   canApplyStockToLine,
   applyStockToSupplierOrderLine,
 } from '../../lib/suppliers'
+import { validateSupplierOrderForm } from '../../lib/validateSupplierOrder'
 import './AdminTable.css'
 import './AdminSuppliers.css'
 
@@ -43,6 +44,7 @@ export default function AdminSupplierOrders() {
   const [del, setDel] = useState(null)
   const [filterSupplier, setFilterSupplier] = useState('all')
   const [uploadError, setUploadError] = useState('')
+  const [formErrors, setFormErrors] = useState({})
 
   const canManage = userCan('proveedores.pedidos.gestionar')
 
@@ -57,11 +59,13 @@ export default function AdminSupplierOrders() {
   const productName = id => products.find(p => p.id === id)?.name ?? '—'
 
   function openNew() {
+    setFormErrors({})
     setForm({ ...EMPTY_ORDER, items: [{ productId: '', qty: '1', unitCost: '' }] })
   }
 
   function openEdit(order) {
     if (isSupplierOrderLocked(order)) return
+    setFormErrors({})
     setForm({
       ...order,
       expectedAt: order.expectedAt ? order.expectedAt.slice(0, 10) : '',
@@ -74,7 +78,7 @@ export default function AdminSupplierOrders() {
     setDetail(null)
   }
 
-  function closeForm() { setForm(null) }
+  function closeForm() { setForm(null); setFormErrors({}) }
 
   function supplierProducts(supplierId) {
     return productSuppliesFrom(supplierId, products)
@@ -103,7 +107,12 @@ export default function AdminSupplierOrders() {
   }
 
   function handleSave() {
-    if (!form.supplierId || !form.items?.some(i => i.productId)) return
+    const { valid, errors } = validateSupplierOrderForm(form)
+    if (!valid) {
+      setFormErrors(errors)
+      return
+    }
+    setFormErrors({})
     const order = buildOrderFromForm()
     dispatch({ type: form.id ? 'SUPPLIER_ORDER_UPDATE' : 'SUPPLIER_ORDER_ADD', order })
     closeForm()
@@ -118,6 +127,17 @@ export default function AdminSupplierOrders() {
   }
 
   function updateItem(idx, patch) {
+    setFormErrors(prev => {
+      if (!prev.lineItems?.[idx] && !prev.items && !prev.supplierId) return prev
+      const next = { ...prev }
+      if (next.lineItems?.[idx]) {
+        next.lineItems = { ...next.lineItems }
+        delete next.lineItems[idx]
+        if (!Object.keys(next.lineItems).length) delete next.lineItems
+      }
+      delete next.items
+      return next
+    })
     setForm(f => ({
       ...f,
       items: f.items.map((item, i) => (i === idx ? { ...item, ...patch } : item)),
@@ -297,22 +317,33 @@ export default function AdminSupplierOrders() {
                 <button onClick={closeForm}><X size={20}/></button>
               </div>
               <div className="modal-body">
+                {Object.keys(formErrors).length > 0 && (
+                  <p className="form-validation-summary">Revisa los campos marcados antes de guardar.</p>
+                )}
                 <div className="form-grid-2">
-                  <div className="form-row">
+                  <div className={`form-row ${formErrors.supplierId ? 'has-error' : ''}`}>
                     <label>Proveedor *</label>
                     <select
                       value={form.supplierId}
-                      onChange={e => setForm(f => ({
+                      onChange={e => {
+                        setFormErrors(prev => {
+                          const next = { ...prev }
+                          delete next.supplierId
+                          delete next.items
+                          return next
+                        })
+                        setForm(f => ({
                         ...f,
                         supplierId: e.target.value,
                         items: [{ productId: '', qty: '1', unitCost: '' }],
-                      }))}
+                      }))}}
                     >
                       <option value="">Seleccionar…</option>
                       {suppliers.filter(s => s.active !== false).map(s => (
                         <option key={s.id} value={s.id}>{s.name}</option>
                       ))}
                     </select>
+                    {formErrors.supplierId && <span className="form-field-error">{formErrors.supplierId}</span>}
                   </div>
                   <div className="form-row">
                     <label>Referencia</label>
@@ -352,33 +383,47 @@ export default function AdminSupplierOrders() {
                 </div>
 
                 <h3 className="spo-lines-title">Líneas del pedido</h3>
+                {formErrors.items && <p className="form-field-error">{formErrors.items}</p>}
                 {!form.supplierId && (
                   <p className="form-hint">Selecciona un proveedor para ver sus productos.</p>
                 )}
                 {(form.items || []).map((line, idx) => {
                   const available = supplierProducts(form.supplierId)
+                  const lineErr = formErrors.lineItems?.[idx] || {}
                   return (
-                    <div key={idx} className="spo-line-row">
-                      <select
-                        value={line.productId}
-                        onChange={e => updateItem(idx, { productId: e.target.value })}
-                        disabled={!form.supplierId}
-                      >
-                        <option value="">Producto…</option>
-                        {available.map(p => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </select>
-                      <input
-                        type="number" min="1" placeholder="Ud."
-                        value={line.qty}
-                        onChange={e => updateItem(idx, { qty: e.target.value })}
-                      />
-                      <input
-                        type="number" min="0" step="0.01" placeholder="Coste ud. €"
-                        value={line.unitCost}
-                        onChange={e => updateItem(idx, { unitCost: e.target.value })}
-                      />
+                    <div key={idx} className={`spo-line-row ${Object.keys(lineErr).length ? 'has-error' : ''}`}>
+                      <div className="spo-line-field">
+                        <select
+                          value={line.productId}
+                          onChange={e => updateItem(idx, { productId: e.target.value })}
+                          disabled={!form.supplierId}
+                          className={lineErr.productId ? 'input-error' : ''}
+                        >
+                          <option value="">Producto…</option>
+                          {available.map(p => (
+                            <option key={p.id} value={p.id}>{p.name}</option>
+                          ))}
+                        </select>
+                        {lineErr.productId && <span className="form-field-error">{lineErr.productId}</span>}
+                      </div>
+                      <div className="spo-line-field spo-line-field--qty">
+                        <input
+                          type="number" min="1" placeholder="Ud."
+                          value={line.qty}
+                          onChange={e => updateItem(idx, { qty: e.target.value })}
+                          className={lineErr.qty ? 'input-error' : ''}
+                        />
+                        {lineErr.qty && <span className="form-field-error">{lineErr.qty}</span>}
+                      </div>
+                      <div className="spo-line-field spo-line-field--cost">
+                        <input
+                          type="number" min="0" step="0.01" placeholder="Coste ud. €"
+                          value={line.unitCost}
+                          onChange={e => updateItem(idx, { unitCost: e.target.value })}
+                          className={lineErr.unitCost ? 'input-error' : ''}
+                        />
+                        {lineErr.unitCost && <span className="form-field-error">{lineErr.unitCost}</span>}
+                      </div>
                       {(form.items.length > 1) && (
                         <button type="button" className="spo-line-remove" onClick={() => removeLine(idx)}>
                           <X size={14}/>

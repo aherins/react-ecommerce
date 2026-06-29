@@ -66,7 +66,15 @@ function LoginForm({ onSwitch }) {
         <div className="field"><label>Email</label>
           <input type="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="tu@email.com"/></div>
         <div className="field"><label>Contraseña</label>
-          <input type="password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••"/></div>
+          <PasswordField
+            value={password}
+            onChange={setPassword}
+            placeholder="••••••••"
+            autoComplete="current-password"
+            showRules={false}
+            showGenerate={false}
+          />
+        </div>
         {error && <p className="auth-error">{error}</p>}
         {resetSent && <p className="auth-success">Revisa tu email para restablecer la contraseña.</p>}
         <button className="submit-btn" type="submit" disabled={loading}>

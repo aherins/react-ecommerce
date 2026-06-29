@@ -1,22 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, ShoppingBag, Heart, Eye, Search, MessageSquare,
-  Package, Send, ExternalLink,
+  Package, Send, ExternalLink, History, Tag,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase, hasSupabase } from '../../lib/supabase'
 import { fetchStoreCustomerDetail, addCustomerNote } from '../../lib/customersApi'
 import { ORDER_STATUS_LABEL } from '../../lib/admin'
+import { buildCustomerTimeline, getTimelineEventLabel } from '../../lib/customerTimeline'
 import './AdminCustomers.css'
-
-const EVENT_LABELS = {
-  product_view: 'Vió producto',
-  search: 'Búsqueda',
-  add_to_cart: 'Añadió al carrito',
-  wishlist_add: 'Añadió a deseos',
-  wishlist_remove: 'Quitó de deseos',
-}
 
 function fmtDateTime(iso) {
   if (!iso) return '—'
@@ -83,8 +76,13 @@ export default function AdminCustomerDetail() {
   if (!data) return null
 
   const { customer, stats, orders, events, wishlist, notes } = data
+  const timeline = useMemo(
+    () => buildCustomerTimeline({ orders, notes, events }),
+    [orders, notes, events],
+  )
   const tabs = [
     { key: 'resumen', label: 'Resumen', icon: Package },
+    { key: 'historial', label: 'Historial', icon: History },
     { key: 'pedidos', label: `Pedidos (${orders.length})`, icon: ShoppingBag },
     { key: 'actividad', label: 'Actividad', icon: Eye },
     { key: 'deseos', label: `Deseos (${wishlist.length})`, icon: Heart },
@@ -140,6 +138,65 @@ export default function AdminCustomerDetail() {
           </div>
         )}
 
+        {tab === 'historial' && (
+          <ul className="customer-history">
+            {timeline.length === 0 && (
+              <li className="muted">Sin actividad registrada todavía.</li>
+            )}
+            {timeline.map(item => (
+              <li key={item.id} className={`customer-history-item customer-history-item--${item.type}`}>
+                <span className="customer-history-time">{fmtDateTime(item.at)}</span>
+                <div className="customer-history-body">
+                  {item.type === 'order' && (
+                    <>
+                      <span className="customer-history-type">
+                        <ShoppingBag size={14}/> Pedido #{item.order.id.slice(-8).toUpperCase()}
+                      </span>
+                      <span className="customer-history-detail">
+                        {ORDER_STATUS_LABEL[item.order.status] || item.order.status}
+                        {' · '}{Number(item.order.total).toFixed(2)} €
+                        {item.order.coupon_code && (
+                          <span className="customer-history-coupon">
+                            <Tag size={12}/> {item.order.coupon_code}
+                            {Number(item.order.discount) > 0 && ` (−${Number(item.order.discount).toFixed(2)} €)`}
+                          </span>
+                        )}
+                      </span>
+                      <Link to="/admin/pedidos" state={{ openOrderId: item.order.id }} className="customer-history-link">
+                        Ver pedido <ExternalLink size={11}/>
+                      </Link>
+                    </>
+                  )}
+                  {item.type === 'note' && (
+                    <>
+                      <span className="customer-history-type">
+                        <MessageSquare size={14}/> Nota interna
+                      </span>
+                      <p className="customer-history-note">{item.note.body}</p>
+                      <span className="customer-history-meta">{item.note.author_name}</span>
+                    </>
+                  )}
+                  {item.type === 'event' && (
+                    <>
+                      <span className="customer-history-type">
+                        <Eye size={14}/> {getTimelineEventLabel(item.event)}
+                      </span>
+                      {item.event.product && (
+                        <span className="customer-history-detail">{item.event.product.name}</span>
+                      )}
+                      {item.event.event_type === 'search' && item.event.metadata?.query && (
+                        <span className="customer-history-detail">
+                          <Search size={12}/> «{item.event.metadata.query}»
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
         {tab === 'pedidos' && (
           <div className="customer-orders-list">
             {orders.length === 0 && <p className="muted">Sin pedidos</p>}
@@ -163,7 +220,7 @@ export default function AdminCustomerDetail() {
             {events.map(e => (
               <li key={e.id}>
                 <span className="timeline-time">{fmtDateTime(e.created_at)}</span>
-                <span className="timeline-type">{EVENT_LABELS[e.event_type] || e.event_type}</span>
+                <span className="timeline-type">{getTimelineEventLabel(e)}</span>
                 {e.product && <span className="timeline-product">{e.product.name}</span>}
                 {e.event_type === 'search' && e.metadata?.query && (
                   <span className="timeline-product"><Search size={12}/> «{e.metadata.query}»</span>

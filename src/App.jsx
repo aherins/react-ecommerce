@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { StoreProvider } from './context/StoreContext'
 import { AuthProvider } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
 import StoreFront from './pages/StoreFront'
 import ProductDetail from './pages/ProductDetail'
 import CartPage from './pages/CartPage'
@@ -37,6 +38,7 @@ export default function App() {
   return (
     <StoreProvider>
       <AuthProvider>
+        <ToastProvider>
         <BrowserRouter>
           <Routes>
             <Route element={<StoreLayout />}>
@@ -100,6 +102,7 @@ export default function App() {
             </Route>
           </Routes>
         </BrowserRouter>
+        </ToastProvider>
       </AuthProvider>
     </StoreProvider>
   )

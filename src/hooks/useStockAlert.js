@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import {
   checkStockAlert,
   subscribeStockAlert,
@@ -9,6 +10,7 @@ import {
 
 export function useStockAlert(productId) {
   const { user } = useAuth()
+  const toast = useToast()
   const [email, setEmail] = useState(user?.email || getLocalAlertEmail(productId) || '')
   const [subscribed, setSubscribed] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -51,12 +53,15 @@ export function useStockAlert(productId) {
     setSubmitting(false)
     if (!result.ok) {
       setError(result.error)
+      toast(result.error, 'error')
       return false
     }
     setSubscribed(true)
-    setMessage(result.already
+    const msg = result.already
       ? 'Ya tenías activada la alerta para este producto.'
-      : '¡Listo! Te avisaremos cuando vuelva a haber stock.')
+      : `Te avisaremos en ${email.trim()} cuando haya stock.`
+    setMessage(msg)
+    toast(msg, 'success')
     return true
   }
 
@@ -68,10 +73,13 @@ export function useStockAlert(productId) {
     setSubmitting(false)
     if (!result.ok) {
       setError(result.error)
+      toast(result.error, 'error')
       return false
     }
     setSubscribed(false)
-    setMessage('Has cancelado el aviso de stock.')
+    const msg = 'Has cancelado el aviso de stock.'
+    setMessage(msg)
+    toast(msg, 'success')
     return true
   }
 
