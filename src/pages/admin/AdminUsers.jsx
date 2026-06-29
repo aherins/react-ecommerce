@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Trash2, X, Check, Shield, Mail, User, KeyRound } from 'lucide-react'
+import { Plus, Trash2, X, Check, Shield, Mail, User, KeyRound, RotateCcw } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase, hasSupabase } from '../../lib/supabase'
-import { createAdminUser, fetchAdminUsers } from '../../lib/adminUsersApi'
+import { createAdminUser, fetchAdminUsers, resetAdminUserPassword } from '../../lib/adminUsersApi'
 import { ROLES, ROLE_LABELS, ROLE_COLORS, DEMO_USERS } from '../../lib/roles'
 import Portal from '../../components/Portal'
 import PasswordField from '../../components/PasswordField'
@@ -23,7 +23,9 @@ export default function AdminUsers() {
   const [modal,   setModal]   = useState(null)   // null | { mode: 'invite'|'edit', user? }
   const [delId,   setDelId]   = useState(null)
   const [saving,  setSaving]  = useState(false)
+  const [resettingId, setResettingId] = useState('')
   const [error,   setError]   = useState('')
+  const [info, setInfo] = useState('')
   const [loadError, setLoadError] = useState('')
 
   // Form state
@@ -62,6 +64,7 @@ export default function AdminUsers() {
   async function loadUsers() {
     setLoading(true)
     setLoadError('')
+    setInfo('')
     if (!hasSupabase) {
       setUsers(DEMO_USERS.map(u => ({
         id: u.id, email: u.email, role: u.role,
@@ -106,7 +109,7 @@ export default function AdminUsers() {
     if (!email.trim()) { setError('Introduce un email.'); return }
     const pw = getPasswordValidation(password)
     if (!pw.valid) { setError(pw.message); return }
-    setSaving(true); setError('')
+    setSaving(true); setError(''); setInfo('')
     if (!hasSupabase) {
       setUsers(prev => [...prev, {
         id: `demo-${Date.now()}`, email, role: selRole,
@@ -126,6 +129,7 @@ export default function AdminUsers() {
         accessToken: session.access_token,
       })
       await loadUsers()
+      setInfo('Usuario creado. Se ha enviado un correo con la contraseña temporal.')
       setModal(null)
     } catch (err) {
       setError(err.message || 'No se pudo crear el usuario.')
@@ -134,7 +138,7 @@ export default function AdminUsers() {
   }
 
   async function handleEditRole() {
-    setSaving(true); setError('')
+    setSaving(true); setError(''); setInfo('')
     if (!hasSupabase) {
       setUsers(prev => prev.map(u => u.id === modal.user.id ? { ...u, role: selRole } : u))
       setModal(null); setSaving(false); return
@@ -156,6 +160,29 @@ export default function AdminUsers() {
     setDelId(null)
   }
 
+  async function handleResetPassword(userId) {
+    if (!hasSupabase) {
+      setError('No disponible en modo demo.')
+      return
+    }
+    setResettingId(userId)
+    setError('')
+    setInfo('')
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('Sesión expirada. Vuelve a iniciar sesión.')
+      const result = await resetAdminUserPassword({ userId, accessToken: session.access_token })
+      if (result.emailSent) {
+        setInfo('Contraseña temporal generada y enviada por email.')
+      } else {
+        setInfo(`Contraseña temporal generada (${result.tempPassword}). Email no enviado.`)
+      }
+    } catch (err) {
+      setError(err.message || 'No se pudo resetear la contraseña.')
+    }
+    setResettingId('')
+  }
+
   return (
     <div className="admin-table-page">
       <div className="page-header">
@@ -169,6 +196,7 @@ export default function AdminUsers() {
       </div>
 
       {loadError && <p className="form-error users-load-error">{loadError}</p>}
+      {info && <p className="users-info">{info}</p>}
 
       {/* Role legend */}
       <div className="roles-legend">
@@ -202,6 +230,16 @@ export default function AdminUsers() {
                 <td style={{fontSize:13,color:'var(--muted)'}}>{new Date(u.created_at).toLocaleDateString('es-ES')}</td>
                 <td>
                   <div className="row-actions">
+                    {canCreate && (
+                      <button
+                        className="action-btn edit"
+                        onClick={() => handleResetPassword(u.id)}
+                        title="Resetear contraseña"
+                        disabled={u.id === currentUser?.id || resettingId === u.id}
+                      >
+                        <RotateCcw size={14}/>
+                      </button>
+                    )}
                     {canCreate && (
                       <button className="action-btn edit" onClick={() => openEdit(u)} title="Cambiar rol"
                         disabled={u.id === currentUser?.id}>

@@ -2,11 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, ShoppingBag, Heart, Eye, Search, MessageSquare,
-  Package, Send, ExternalLink, History, Tag,
+  Package, Send, ExternalLink, History, Tag, RotateCcw,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase, hasSupabase } from '../../lib/supabase'
-import { fetchStoreCustomerDetail, addCustomerNote } from '../../lib/customersApi'
+import { fetchStoreCustomerDetail, addCustomerNote, resetCustomerPassword } from '../../lib/customersApi'
 import { ORDER_STATUS_LABEL } from '../../lib/admin'
 import { buildCustomerTimeline, getTimelineEventLabel } from '../../lib/customerTimeline'
 import './AdminCustomers.css'
@@ -28,14 +28,18 @@ export default function AdminCustomerDetail() {
   const [tab, setTab] = useState('resumen')
   const [note, setNote] = useState('')
   const [savingNote, setSavingNote] = useState(false)
+  const [resettingPassword, setResettingPassword] = useState(false)
+  const [info, setInfo] = useState('')
 
   const canNote = userCan('clientes.notas')
+  const canResetPassword = userCan('usuarios.crear') || userCan('clientes.notas')
 
   useEffect(() => { load() }, [id])
 
   async function load() {
     setLoading(true)
     setError('')
+    setInfo('')
     if (!hasSupabase) {
       setError('Conecta Supabase para ver fichas de cliente.')
       setLoading(false)
@@ -64,6 +68,26 @@ export default function AdminCustomerDetail() {
       setError(err.message)
     }
     setSavingNote(false)
+  }
+
+  async function handleResetPassword() {
+    if (!canResetPassword) return
+    setResettingPassword(true)
+    setError('')
+    setInfo('')
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('Sesión expirada.')
+      const result = await resetCustomerPassword(session.access_token, id)
+      if (result.emailSent) {
+        setInfo('Contraseña temporal enviada al cliente por email.')
+      } else {
+        setInfo(`Contraseña temporal generada (${result.tempPassword}). Email no enviado.`)
+      }
+    } catch (err) {
+      setError(err.message)
+    }
+    setResettingPassword(false)
   }
 
   if (loading) return <div className="customer-detail-loading"><span className="spinner dark"/></div>
@@ -107,7 +131,20 @@ export default function AdminCustomerDetail() {
             <span>Última visita: {fmtDateTime(customer.last_seen_at)}</span>
           </div>
         </div>
+        {canResetPassword && (
+          <button
+            type="button"
+            className="customer-reset-pass-btn"
+            onClick={handleResetPassword}
+            disabled={resettingPassword}
+          >
+            <RotateCcw size={14}/>
+            {resettingPassword ? 'Reseteando…' : 'Resetear contraseña'}
+          </button>
+        )}
       </header>
+      {info && <p className="customers-info">{info}</p>}
+      {error && data && <p className="customers-error">{error}</p>}
 
       <div className="customer-stats-row">
         <div className="customer-stat"><strong>{stats.order_count}</strong><span>Pedidos</span></div>

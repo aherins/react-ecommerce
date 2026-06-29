@@ -70,7 +70,10 @@ export default async function handler(req) {
       email,
       password,
       email_confirm: true,
-      user_metadata: name ? { full_name: name } : {},
+      user_metadata: {
+        ...(name ? { full_name: name } : {}),
+        must_change_password: true,
+      },
     }),
   })
   const created = await createRes.json()
@@ -107,7 +110,7 @@ export default async function handler(req) {
     const { siteUrl, storeName } = getResendConfig()
     const result = await sendResendEmail({
       to: email,
-      subject: `Acceso al panel — ${storeName}`,
+      subject: `Acceso al panel (contraseña temporal) — ${storeName}`,
       html: welcomeStaffHtml({
         name,
         email,

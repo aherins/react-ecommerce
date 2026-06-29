@@ -90,6 +90,7 @@ export default async function handler(req) {
       registered_at: profile?.registered_at || authUser.created_at,
       last_seen_at: profile?.last_seen_at || null,
       avatar_url: profile?.avatar_url || authUser.user_metadata?.avatar_url || null,
+      must_change_password: Boolean(authUser.user_metadata?.must_change_password),
     },
     orders,
     events: events.map(e => ({

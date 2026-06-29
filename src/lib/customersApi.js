@@ -36,3 +36,17 @@ export async function addCustomerNote(accessToken, userId, body) {
   if (!res.ok) throw new Error(data.error || 'No se pudo guardar la nota.')
   return data.note
 }
+
+export async function resetCustomerPassword(accessToken, userId) {
+  const res = await fetch('/api/reset-user-password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ userId }),
+  })
+  const data = await parseJson(res)
+  if (!res.ok) throw new Error(data.error || 'No se pudo resetear la contraseña.')
+  return data
+}

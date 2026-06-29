@@ -4,6 +4,7 @@ import { Store, Menu, X, LogOut, User, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { navForRole, ROLE_LABELS, ROLE_COLORS } from '../../lib/roles'
 import Login from './Login'
+import ForcePasswordChangeGate from '../../components/ForcePasswordChangeGate'
 import './AdminLayout.css'
 
 function RoleBadge({ role }) {
@@ -127,6 +128,7 @@ export default function AdminLayout() {
         </header>
         <main className="admin-content"><Outlet /></main>
       </div>
+      <ForcePasswordChangeGate />
     </div>
   )
 }

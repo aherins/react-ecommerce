@@ -58,6 +58,14 @@
 }
 
 .users-load-error { margin-bottom: 16px; }
+.users-info {
+  font-size: 13px;
+  color: var(--success);
+  background: #dcfce7;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
 
 .form-hint {
   font-size: 12px;

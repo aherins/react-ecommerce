@@ -145,12 +145,14 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
+  const mustChangePassword = Boolean(user?.user_metadata?.must_change_password)
   function userCan(permission) { return can(role, permission) }
 
   return (
     <AuthContext.Provider value={{
       user, role, loading,
       signIn, signUp, signInWithGoogle, signOut, resetPassword,
+      mustChangePassword,
       userCan,
       hasAdminAccess: Boolean(role),
       hasSupabase,
@@ -170,6 +172,7 @@ export function useAuth() {
     signInWithGoogle: async () => ({ error: null }),
     signOut: async () => {},
     resetPassword: async () => ({ error: null }),
+    mustChangePassword: false,
     userCan: () => false,
     hasAdminAccess: false,
     hasSupabase: false,

@@ -74,3 +74,24 @@ export function welcomeStaffHtml({ name, email, password, role, loginUrl, storeN
 
   return layout({ storeName, body })
 }
+
+export function temporaryPasswordHtml({
+  name,
+  email,
+  password,
+  loginUrl,
+  storeName,
+  accountLabel = 'tu cuenta',
+}) {
+  const body = `
+    <h1 style="margin:0 0 8px;font-size:22px;color:#0f0e0d">Nueva contraseña temporal</h1>
+    <p style="color:#8a8680;margin:0 0 20px">Hola${name ? ` ${name}` : ''}, hemos generado una contraseña temporal para ${accountLabel} en ${storeName}.</p>
+    <table style="width:100%;font-size:14px;border-collapse:collapse">
+      <tr><td style="padding:8px 0;color:#8a8680">Email</td><td style="padding:8px 0;font-weight:600">${email}</td></tr>
+      <tr><td style="padding:8px 0;color:#8a8680">Contraseña temporal</td><td style="padding:8px 0;font-family:monospace;font-weight:700">${password}</td></tr>
+    </table>
+    <p style="font-size:13px;color:#8a8680;margin:18px 0">Al iniciar sesión te pediremos cambiarla por una nueva contraseña segura.</p>
+    <a href="${loginUrl}" style="display:inline-block;background:#0f0e0d;color:#f5f2ee;text-decoration:none;padding:12px 24px;border-radius:99px;font-size:14px;font-weight:600">Iniciar sesión</a>`
+
+  return layout({ storeName, body })
+}

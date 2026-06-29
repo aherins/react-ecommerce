@@ -26,6 +26,15 @@
   margin-bottom: 16px;
 }
 
+.customers-info {
+  font-size: 13px;
+  color: var(--success);
+  background: #dcfce7;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+
 .customer-cell {
   display: flex;
   align-items: center;
@@ -75,6 +84,23 @@
   align-items: center;
   margin-bottom: 24px;
 }
+
+.customer-reset-pass-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 99px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 13px;
+  font-family: var(--font-body);
+  transition: background var(--transition);
+}
+
+.customer-reset-pass-btn:hover:not(:disabled) { background: var(--accent); }
+.customer-reset-pass-btn:disabled { opacity: 0.6; cursor: wait; }
 
 .customer-detail-avatar {
   width: 72px;
