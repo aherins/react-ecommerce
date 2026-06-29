@@ -90,6 +90,15 @@ export default function AdminCustomerDetail() {
     setResettingPassword(false)
   }
 
+  const timeline = useMemo(
+    () => buildCustomerTimeline({
+      orders: data?.orders ?? [],
+      notes: data?.notes ?? [],
+      events: data?.events ?? [],
+    }),
+    [data],
+  )
+
   if (loading) return <div className="customer-detail-loading"><span className="spinner dark"/></div>
   if (error && !data) return (
     <div className="customer-detail-error">
@@ -100,10 +109,6 @@ export default function AdminCustomerDetail() {
   if (!data) return null
 
   const { customer, stats, orders, events, wishlist, notes } = data
-  const timeline = useMemo(
-    () => buildCustomerTimeline({ orders, notes, events }),
-    [orders, notes, events],
-  )
   const tabs = [
     { key: 'resumen', label: 'Resumen', icon: Package },
     { key: 'historial', label: 'Historial', icon: History },
