@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import { activity } from '../lib/activity'
 import { useStore } from '../context/StoreContext'
 import { getCartQty } from '../context/store/stock'
-import { getCategoryPath } from '../lib/categories'
+import { getCategoryPath, getPathToCategory } from '../lib/categories'
 import StockAlertForm from '../components/StockAlertForm'
 import './ProductDetail.css'
 
@@ -79,15 +79,11 @@ export default function ProductDetail() {
             {categoryPath.length > 0 && (
               <nav className="detail-cat-path" aria-label="Categoría">
                 {categoryPath.map((cat, i) => {
-                  const root = categoryPath[0]
-                  const isSub = i > 0
-                  const href = isSub
-                    ? `/?cat=${root.slug}&sub=${cat.slug}`
-                    : `/?cat=${cat.slug}`
+                  const partialPath = categoryPath.slice(0, i + 1).map(s => s.slug).join('/')
                   return (
                     <React.Fragment key={cat.id}>
                       {i > 0 && <span className="detail-cat-sep">›</span>}
-                      <Link to={href} className="detail-cat">{cat.name}</Link>
+                      <Link to={`/?path=${partialPath}`} className="detail-cat">{cat.name}</Link>
                     </React.Fragment>
                   )
                 })}

@@ -5,9 +5,11 @@ import { useAuth } from '../../context/AuthContext'
 import {
   getRootCategories,
   getChildCategories,
-  getCategoryLabel,
+  getCategoryById,
   getDescendantIds,
+  getParentOptions,
   canAssignParent,
+  countAllSubcategories,
 } from '../../lib/categories'
 import Portal from '../../components/Portal'
 import './AdminTable.css'
@@ -32,7 +34,7 @@ export default function AdminCategories() {
 
   const roots = getRootCategories(categories)
   const rootCount = roots.length
-  const subCount = categories.length - rootCount
+  const subCount = countAllSubcategories(categories)
 
   function openNew(parentId = '') {
     setFormError('')
@@ -57,7 +59,7 @@ export default function AdminCategories() {
     if (!form.name) return
     const parentId = form.parentId || null
     if (!canAssignParent(categories, form.id, parentId)) {
-      setFormError('Solo se permite un nivel: la categoría padre debe ser principal y no puede tener subcategorías propias.')
+      setFormError('No puedes asignar una categoría padre que sea ella misma ni una de sus subcategorías.')
       return
     }
     if (categories.some(c => c.slug === (form.slug || toSlug(form.name)) && c.id !== form.id)) {
@@ -71,7 +73,6 @@ export default function AdminCategories() {
       parentId,
       id: form.id || `cat-${Date.now()}`,
     }
-    delete category.parentName
 
     if (form.id) {
       dispatch({ type: 'CATEGORY_UPDATE', category })
@@ -87,11 +88,11 @@ export default function AdminCategories() {
   }
 
   const countProducts = id => products.filter(p => p.categoryId === id).length
-
-  const parentOptions = getRootCategories(categories).filter(c => c.id !== form?.id)
+  const parentOptions = form ? getParentOptions(categories, form.id) : []
 
   function renderRow(c, depth = 0) {
     const children = getChildCategories(categories, c.id)
+    const parent = c.parentId ? getCategoryById(categories, c.parentId) : null
 
     return (
       <React.Fragment key={c.id}>
@@ -100,14 +101,14 @@ export default function AdminCategories() {
             <div className="category-name-cell" style={{ paddingLeft: depth * 20 }}>
               {depth > 0 && <span className="category-tree-mark">↳</span>}
               <span>{c.name}</span>
-              {depth === 0 && children.length > 0 && (
+              {children.length > 0 && (
                 <span className="category-subcount">{children.length} sub</span>
               )}
             </div>
           </td>
           <td>
-            {depth > 0 ? (
-              <span className="category-parent-label">{getCategoryLabel(categories, c.id).split(' › ')[0]}</span>
+            {parent ? (
+              <span className="category-parent-label">{parent.name}</span>
             ) : (
               <span className="category-parent-label muted">—</span>
             )}
@@ -116,7 +117,7 @@ export default function AdminCategories() {
           <td>{countProducts(c.id)}</td>
           <td>
             <div className="row-actions">
-              {canCreate && depth === 0 && (
+              {canCreate && (
                 <button
                   className="action-btn edit"
                   onClick={() => openNew(c.id)}
@@ -152,7 +153,7 @@ export default function AdminCategories() {
         <div>
           <h1 className="page-title">Categorías</h1>
           <p className="page-sub">
-            {rootCount} principales · {subCount} subcategorías
+            {rootCount} principales · {subCount} subcategorías · anidación ilimitada
           </p>
         </div>
         {canCreate && (
@@ -208,16 +209,14 @@ export default function AdminCategories() {
                 <select
                   value={form.parentId || ''}
                   onChange={e => setForm(f => ({ ...f, parentId: e.target.value }))}
-                  disabled={Boolean(form.id && getChildCategories(categories, form.id).length)}
                 >
                   <option value="">Ninguna (categoría principal)</option>
                   {parentOptions.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id}>
+                      {'\u00A0'.repeat(c.depth * 2)}{c.depth ? '↳ ' : ''}{c.label}
+                    </option>
                   ))}
                 </select>
-                {form.id && getChildCategories(categories, form.id).length > 0 && (
-                  <p className="form-hint">No puedes convertir en subcategoría una que ya tiene hijas.</p>
-                )}
               </div>
               <div className="form-row">
                 <label>Nombre *</label>
@@ -247,7 +246,7 @@ export default function AdminCategories() {
             <div className="modal-body">
               <p>
                 ¿Eliminar «{deleteTarget?.name}»?
-                {deleteDescendants > 0 && ` Se eliminarán también ${deleteDescendants} subcategoría(s).`}
+                {deleteDescendants > 0 && ` Se eliminarán también ${deleteDescendants} subcategoría(s) anidadas.`}
                 {' '}Los productos asociados quedarán sin categoría.
               </p>
             </div>

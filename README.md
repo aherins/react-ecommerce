@@ -137,7 +137,8 @@ O conecta el repositorio en [vercel.com](https://vercel.com) y añade las variab
 Ejecuta esto en **Supabase → SQL Editor** para crear las tablas:
 
 ```sql
--- Categorías
+-- Subcategorías anidadas (ilimitadas): parentId → categories(id)
+-- Migración en proyectos existentes: supabase/categories_subcategories.sql
 create table categories (
   id text primary key,
   name text not null,

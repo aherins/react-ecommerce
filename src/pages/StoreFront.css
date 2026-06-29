@@ -86,6 +86,41 @@
   padding-left: 4px;
 }
 
+.filter-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -24px 0 16px;
+  font-size: 13px;
+}
+
+.filter-breadcrumb-sep {
+  color: var(--muted);
+}
+
+.filter-breadcrumb-btn {
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.filter-breadcrumb-btn:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.filter-breadcrumb-btn.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
 .filter-btn--sub {
   font-size: 12px;
   padding: 5px 12px;

@@ -88,6 +88,15 @@
   background: var(--cream);
 }
 
+.navbar-cat-group--nested {
+  position: relative;
+}
+
+.navbar-cat-group--nested > .navbar-subcats {
+  top: 0;
+  left: calc(100% + 4px);
+}
+
 .navbar-actions {
   display: flex;
   align-items: center;
@@ -176,6 +185,11 @@
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+  }
+
+  .navbar-cat-group--nested > .navbar-subcats {
+    left: 0;
+    padding-left: 16px;
   }
 
   .navbar-cat-chevron { display: none; }

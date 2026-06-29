@@ -18,13 +18,16 @@ export function getCategoryPath(categories, id) {
   const cat = getCategoryById(categories, id)
   if (!cat) return []
   if (!cat.parentId) return [cat]
-  const parent = getCategoryById(categories, cat.parentId)
-  return parent ? [parent, cat] : [cat]
+  return [...getCategoryPath(categories, cat.parentId), cat]
 }
 
 export function getCategoryLabel(categories, id) {
   const path = getCategoryPath(categories, id)
   return path.length ? path.map(c => c.name).join(' › ') : '—'
+}
+
+export function getPathToCategory(categories, id) {
+  return getCategoryPath(categories, id).map(c => c.slug).join('/')
 }
 
 export function getDescendantIds(categories, rootId) {
@@ -39,27 +42,38 @@ export function getDescendantIds(categories, rootId) {
   return ids
 }
 
-export function resolveCategoryFilter(categories, catSlug, subSlug) {
-  if (!catSlug) return null
+export function parseCategoryPath(categories, pathParam, legacyCat = '', legacySub = '') {
+  let pathStr = (pathParam || '').trim()
+  if (!pathStr && legacyCat) {
+    pathStr = legacySub ? `${legacyCat}/${legacySub}` : legacyCat
+  }
+  if (!pathStr) return null
 
-  const root = getCategoryBySlug(categories, catSlug)
-  if (!root) return { ids: new Set(), root: null, sub: null }
+  const slugs = pathStr.split('/').filter(Boolean)
+  const segments = []
+  let expectedParentId = null
 
-  if (subSlug) {
-    const sub = categories.find(c => c.slug === subSlug && c.parentId === root.id)
-    return {
-      ids: sub ? new Set([sub.id]) : new Set(),
-      root,
-      sub: sub || null,
+  for (const slug of slugs) {
+    const cat = categories.find(c =>
+      c.slug === slug && (c.parentId || null) === (expectedParentId || null)
+    )
+    if (!cat) {
+      return { segments, active: segments[segments.length - 1] || null, ids: new Set(), invalid: true }
     }
+    segments.push(cat)
+    expectedParentId = cat.id
   }
 
-  const childIds = getChildCategories(categories, root.id).map(c => c.id)
-  return {
-    ids: new Set([root.id, ...childIds]),
-    root,
-    sub: null,
-  }
+  const active = segments[segments.length - 1] || null
+  if (!active) return null
+
+  const ids = new Set([active.id, ...getDescendantIds(categories, active.id)])
+  return { segments, active, ids, invalid: false }
+}
+
+/** @deprecated use parseCategoryPath */
+export function resolveCategoryFilter(categories, catSlug, subSlug) {
+  return parseCategoryPath(categories, '', catSlug, subSlug)
 }
 
 export function productMatchesCategoryFilter(productCategoryId, filter) {
@@ -68,22 +82,40 @@ export function productMatchesCategoryFilter(productCategoryId, filter) {
   return filter.ids.has(productCategoryId)
 }
 
-export function flattenCategoriesForSelect(categories) {
+export function flattenCategoriesForSelect(categories, excludeId = null) {
+  const exclude = new Set(
+    excludeId ? [excludeId, ...getDescendantIds(categories, excludeId)] : [],
+  )
   const rows = []
-  getRootCategories(categories).forEach(root => {
-    rows.push({ id: root.id, label: root.name, depth: 0 })
-    getChildCategories(categories, root.id).forEach(sub => {
-      rows.push({ id: sub.id, label: sub.name, depth: 1, parentName: root.name })
+
+  function walk(parentId, depth) {
+    const nodes = parentId
+      ? getChildCategories(categories, parentId)
+      : getRootCategories(categories)
+
+    nodes.forEach(c => {
+      if (!exclude.has(c.id)) {
+        rows.push({ id: c.id, label: c.name, depth })
+      }
+      walk(c.id, depth + 1)
     })
-  })
+  }
+
+  walk(null, 0)
   return rows
+}
+
+export function getParentOptions(categories, excludeId = null) {
+  return flattenCategoriesForSelect(categories, excludeId)
 }
 
 export function canAssignParent(categories, categoryId, parentId) {
   if (!parentId) return true
   if (categoryId && parentId === categoryId) return false
-  const parent = getCategoryById(categories, parentId)
-  if (!parent || parent.parentId) return false
-  if (categoryId && getChildCategories(categories, categoryId).length > 0) return false
+  if (categoryId && getDescendantIds(categories, categoryId).includes(parentId)) return false
   return true
+}
+
+export function countAllSubcategories(categories) {
+  return (categories || []).filter(c => c.parentId).length
 }

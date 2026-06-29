@@ -206,7 +206,7 @@ export default function AdminProducts() {
                   <option value="">Sin categoría</option>
                   {flattenCategoriesForSelect(categories).map(c => (
                     <option key={c.id} value={c.id}>
-                      {c.depth ? `↳ ${c.label}` : c.label}
+                      {'\u00A0'.repeat(c.depth * 2)}{c.depth ? '↳ ' : ''}{c.label}
                     </option>
                   ))}
                 </select>

@@ -9,8 +9,9 @@ import { activity } from '../lib/activity'
 import {
   getRootCategories,
   getChildCategories,
-  resolveCategoryFilter,
+  parseCategoryPath,
   productMatchesCategoryFilter,
+  getPathToCategory,
 } from '../lib/categories'
 import './StoreFront.css'
 
@@ -30,22 +31,25 @@ export default function StoreFront() {
     if (q) activity.trackSearch(q, user?.id)
   }
 
-  const activeCat = params.get('cat') || ''
-  const activeSub = params.get('sub') || ''
-  const categoryFilter = resolveCategoryFilter(categories, activeCat, activeSub)
-  const activeRoot = categoryFilter?.root
-  const subcategories = activeRoot ? getChildCategories(categories, activeRoot.id) : []
+  const pathParam = params.get('path') || ''
+  const legacyCat = params.get('cat') || ''
+  const legacySub = params.get('sub') || ''
+  const categoryFilter = parseCategoryPath(categories, pathParam, legacyCat, legacySub)
+  const activeCategory = categoryFilter?.active
+  const pathSegments = categoryFilter?.segments || []
+  const activeRoot = pathSegments[0] || null
+  const effectivePath = pathParam || (legacySub ? `${legacyCat}/${legacySub}` : legacyCat)
+  const currentPath = activeCategory ? getPathToCategory(categories, activeCategory.id) : ''
+  const childCategories = activeCategory
+    ? getChildCategories(categories, activeCategory.id)
+    : []
 
-  function setCategory(catSlug, subSlug = '') {
-    if (!catSlug) {
+  function setPath(pathStr) {
+    if (!pathStr) {
       setParams({})
       return
     }
-    if (subSlug) {
-      setParams({ cat: catSlug, sub: subSlug })
-      return
-    }
-    setParams({ cat: catSlug })
+    setParams({ path: pathStr })
   }
 
   const filtered = products.filter(p => {
@@ -78,21 +82,25 @@ export default function StoreFront() {
           <div className="filter-cats">
             <button
               type="button"
-              className={`filter-btn ${!activeCat ? 'active' : ''}`}
-              onClick={() => setCategory('')}
+              className={`filter-btn ${!activeCategory ? 'active' : ''}`}
+              onClick={() => setPath('')}
             >
               Todos
             </button>
-            {getRootCategories(categories).map(c => (
-              <button
-                key={c.id}
-                type="button"
-                className={`filter-btn ${activeCat === c.slug && !activeSub ? 'active' : ''} ${activeCat === c.slug && activeSub ? 'filter-btn--parent-active' : ''}`}
-                onClick={() => setCategory(c.slug)}
-              >
-                {c.name}
-              </button>
-            ))}
+            {getRootCategories(categories).map(c => {
+              const isOnBranch = activeRoot?.id === c.id
+              const isExact = isOnBranch && pathSegments.length === 1
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`filter-btn ${isExact ? 'active' : ''} ${isOnBranch && pathSegments.length > 1 ? 'filter-btn--parent-active' : ''}`}
+                  onClick={() => setPath(c.slug)}
+                >
+                  {c.name}
+                </button>
+              )
+            })}
           </div>
           <input
             className="search-input"
@@ -102,25 +110,50 @@ export default function StoreFront() {
           />
         </div>
 
-        {subcategories.length > 0 && activeCat && (
+        {pathSegments.length > 1 && (
+          <nav className="filter-breadcrumb" aria-label="Ruta de categoría">
+            {pathSegments.map((seg, i) => {
+              const partialPath = pathSegments.slice(0, i + 1).map(s => s.slug).join('/')
+              const isLast = i === pathSegments.length - 1
+              return (
+                <React.Fragment key={seg.id}>
+                  {i > 0 && <span className="filter-breadcrumb-sep">›</span>}
+                  <button
+                    type="button"
+                    className={`filter-breadcrumb-btn ${isLast ? 'active' : ''}`}
+                    onClick={() => setPath(partialPath)}
+                  >
+                    {seg.name}
+                  </button>
+                </React.Fragment>
+              )
+            })}
+          </nav>
+        )}
+
+        {childCategories.length > 0 && activeCategory && (
           <div className="filter-subs">
             <button
               type="button"
-              className={`filter-btn filter-btn--sub ${activeCat && !activeSub ? 'active' : ''}`}
-              onClick={() => setCategory(activeCat)}
+              className="filter-btn filter-btn--sub active"
+              onClick={() => setPath(currentPath)}
             >
-              Todos en {activeRoot.name}
+              Todos en {activeCategory.name}
             </button>
-            {subcategories.map(sub => (
-              <button
-                key={sub.id}
-                type="button"
-                className={`filter-btn filter-btn--sub ${activeSub === sub.slug ? 'active' : ''}`}
-                onClick={() => setCategory(activeCat, sub.slug)}
-              >
-                {sub.name}
-              </button>
-            ))}
+            {childCategories.map(sub => {
+              const subPath = getPathToCategory(categories, sub.id)
+              const isSubActive = effectivePath === subPath || effectivePath.startsWith(`${subPath}/`)
+              return (
+                <button
+                  key={sub.id}
+                  type="button"
+                  className={`filter-btn filter-btn--sub ${isSubActive ? 'active' : ''}`}
+                  onClick={() => setPath(subPath)}
+                >
+                  {sub.name}
+                </button>
+              )
+            })}
           </div>
         )}
 
