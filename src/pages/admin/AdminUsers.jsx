@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Plus, Trash2, X, Check, Shield, Mail, User, KeyRound, RotateCcw } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase, hasSupabase } from '../../lib/supabase'
-import { createAdminUser, fetchAdminUsers, resetAdminUserPassword } from '../../lib/adminUsersApi'
+import { createAdminUser, fetchAdminUsers, removeAdminUser, resetAdminUserPassword } from '../../lib/adminUsersApi'
 import { ROLES, ROLE_LABELS, ROLE_COLORS, DEMO_USERS } from '../../lib/roles'
 import Portal from '../../components/Portal'
 import PasswordField from '../../components/PasswordField'
@@ -155,9 +155,18 @@ export default function AdminUsers() {
       setUsers(prev => prev.filter(u => u.id !== userId))
       setDelId(null); return
     }
-    await supabase.from('user_roles').delete().eq('user_id', userId)
-    await loadUsers()
-    setDelId(null)
+    setSaving(true)
+    setError('')
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('Sesión expirada. Vuelve a iniciar sesión.')
+      await removeAdminUser({ userId, accessToken: session.access_token })
+      await loadUsers()
+      setDelId(null)
+    } catch (err) {
+      setError(err.message || 'No se pudo eliminar el acceso.')
+    }
+    setSaving(false)
   }
 
   async function handleResetPassword(userId) {

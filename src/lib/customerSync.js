@@ -11,6 +11,16 @@ export const customerSync = {
 
   async ensureProfile(user) {
     if (!hasSupabase || !user?.id) return
+    if (user.user_metadata?.is_staff) return
+
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('account_type')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (existing?.account_type === 'staff') return
+
     await supabase.from('profiles').upsert({
       id: user.id,
       email: user.email,

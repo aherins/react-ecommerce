@@ -41,11 +41,16 @@ export default async function handler(req) {
     return json({ error: 'Este usuario es del equipo, no un cliente.' }, 400)
   }
 
+  const profileRes = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=*`, {
+    headers: { ...headers, Accept: 'application/vnd.pgrst.object+json' },
+  })
+  const profile = profileRes.ok ? await profileRes.json() : null
+  if (profile?.account_type === 'staff' || authUser.user_metadata?.is_staff) {
+    return json({ error: 'Este usuario es del equipo, no un cliente.' }, 400)
+  }
+
   const emailEnc = encodeURIComponent(authUser.email || '')
-  const [profileRes, eventsRes, wishlistRes, notesRes, ordersRes, productsRes] = await Promise.all([
-    fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=*`, {
-      headers: { ...headers, Accept: 'application/vnd.pgrst.object+json' },
-    }),
+  const [eventsRes, wishlistRes, notesRes, ordersRes, productsRes] = await Promise.all([
     fetch(`${supabaseUrl}/rest/v1/customer_events?user_id=eq.${userId}&select=*&order=created_at.desc&limit=40`, {
       headers: { ...headers, Accept: 'application/json' },
     }),
@@ -64,7 +69,6 @@ export default async function handler(req) {
     }),
   ])
 
-  const profile = profileRes.ok ? await profileRes.json() : null
   const events = eventsRes.ok ? await eventsRes.json() : []
   const wishlist = wishlistRes.ok ? await wishlistRes.json() : []
   const notes = notesRes.ok ? await notesRes.json() : []

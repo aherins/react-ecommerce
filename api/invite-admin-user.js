@@ -73,6 +73,7 @@ export default async function handler(req) {
       user_metadata: {
         ...(name ? { full_name: name } : {}),
         must_change_password: true,
+        is_staff: true,
       },
     }),
   })

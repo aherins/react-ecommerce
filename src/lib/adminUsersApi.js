@@ -43,3 +43,17 @@ export async function resetAdminUserPassword({ userId, accessToken }) {
   if (!res.ok) throw new Error(data.error || 'No se pudo resetear la contraseña.')
   return data
 }
+
+export async function removeAdminUser({ userId, accessToken }) {
+  const res = await fetch('/api/remove-admin-user', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ userId }),
+  })
+  const data = await parseJson(res)
+  if (!res.ok) throw new Error(data.error || 'No se pudo eliminar el acceso.')
+  return data
+}

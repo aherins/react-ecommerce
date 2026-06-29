@@ -63,7 +63,13 @@ export default async function handler(req) {
   }
 
   let customers = authUsers
-    .filter(u => !staffIds.has(u.id))
+    .filter(u => {
+      if (staffIds.has(u.id)) return false
+      const profile = profileById[u.id]
+      if (profile?.account_type === 'staff') return false
+      if (u.user_metadata?.is_staff) return false
+      return true
+    })
     .map(u => {
       const profile = profileById[u.id]
       const byId = orderStats[u.id] || { count: 0, total: 0, lastOrderAt: null }
