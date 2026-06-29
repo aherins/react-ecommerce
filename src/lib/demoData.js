@@ -1,6 +1,9 @@
 export const DEMO_CATEGORIES = [
   { id: 'cat-ceramica', name: 'Cerámica', slug: 'ceramica' },
+  { id: 'cat-ceramica-cuencos', name: 'Cuencos', slug: 'cuencos', parentId: 'cat-ceramica' },
+  { id: 'cat-ceramica-tazas', name: 'Tazas', slug: 'tazas', parentId: 'cat-ceramica' },
   { id: 'cat-textil', name: 'Textil', slug: 'textil' },
+  { id: 'cat-textil-mantas', name: 'Mantas', slug: 'mantas', parentId: 'cat-textil' },
   { id: 'cat-madera', name: 'Madera', slug: 'madera' },
 ]
 
@@ -67,14 +70,14 @@ export const DEMO_SUPPLIER_ORDERS = [
 
 export const DEMO_PRODUCTS = [
   {
-    id: 'prod-1', name: 'Cuenco de gres', price: 28, categoryId: 'cat-ceramica',
+    id: 'prod-1', name: 'Cuenco de gres', price: 28, categoryId: 'cat-ceramica-cuencos',
     supplierIds: ['sup-ceramica', 'sup-textil'],
     image: 'https://images.unsplash.com/photo-1610701596007-6a9e9a0c8f0a?w=400&h=400&fit=crop',
     description: 'Cuenco artesanal esmaltado a mano. Pieza única con pequeñas variaciones naturales.',
     stock: 12, active: true,
   },
   {
-    id: 'prod-2', name: 'Taza mate', price: 22, categoryId: 'cat-ceramica', supplierIds: ['sup-ceramica'],
+    id: 'prod-2', name: 'Taza mate', price: 22, categoryId: 'cat-ceramica-tazas', supplierIds: ['sup-ceramica'],
     image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
     description: 'Taza de cerámica mate, ideal para el desayuno diario.',
     stock: 8, active: true,

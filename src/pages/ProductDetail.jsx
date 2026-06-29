@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import { activity } from '../lib/activity'
 import { useStore } from '../context/StoreContext'
 import { getCartQty } from '../context/store/stock'
+import { getCategoryPath } from '../lib/categories'
 import StockAlertForm from '../components/StockAlertForm'
 import './ProductDetail.css'
 
@@ -19,7 +20,7 @@ export default function ProductDetail() {
   const [qty, setQty] = useState(1)
 
   const product = products.find(p => p.id === id)
-  const category = product ? categories.find(c => c.id === product.categoryId) : null
+  const categoryPath = product ? getCategoryPath(categories, product.categoryId) : []
   const inWishlist = wishlist?.includes(id)
   const cartQty = product ? getCartQty(cart, product.id) : 0
   const canAdd = product && product.stock > 0 && cartQty + qty <= product.stock
@@ -75,7 +76,23 @@ export default function ProductDetail() {
           </div>
 
           <div className="detail-info">
-            {category && <span className="detail-cat">{category.name}</span>}
+            {categoryPath.length > 0 && (
+              <nav className="detail-cat-path" aria-label="Categoría">
+                {categoryPath.map((cat, i) => {
+                  const root = categoryPath[0]
+                  const isSub = i > 0
+                  const href = isSub
+                    ? `/?cat=${root.slug}&sub=${cat.slug}`
+                    : `/?cat=${cat.slug}`
+                  return (
+                    <React.Fragment key={cat.id}>
+                      {i > 0 && <span className="detail-cat-sep">›</span>}
+                      <Link to={href} className="detail-cat">{cat.name}</Link>
+                    </React.Fragment>
+                  )
+                })}
+              </nav>
+            )}
             <h1 className="detail-name">{product.name}</h1>
             <p className="detail-price">{product.price.toFixed(2)} €</p>
             <p className="detail-desc">{product.description}</p>

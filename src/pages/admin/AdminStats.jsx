@@ -253,10 +253,10 @@ export default function AdminStats() {
         <div className="stats-panel">
           <h2>Ventas por categoría</h2>
           {stats.topCategories.length === 0 && <p className="stats-empty">Sin datos</p>}
-          {stats.topCategories.map(({ category, qty }) => (
+          {stats.topCategories.map(({ category, categoryLabel, qty }) => (
             <MiniBar
               key={category.id}
-              label={category.name}
+              label={categoryLabel || category.name}
               value={qty}
               max={maxCategory}
               color="var(--accent)"

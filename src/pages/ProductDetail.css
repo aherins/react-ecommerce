@@ -37,15 +37,29 @@
   object-fit: cover;
 }
 
+.detail-cat-path {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.detail-cat-sep {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .detail-cat {
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent);
   font-weight: 500;
-  display: block;
-  margin-bottom: 12px;
+  transition: opacity var(--transition);
 }
+
+.detail-cat:hover { opacity: 0.7; }
 
 .detail-name {
   font-family: var(--font-display);

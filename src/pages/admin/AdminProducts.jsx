@@ -6,6 +6,7 @@ import { fetchStockAlertCounts } from '../../lib/stockAlerts'
 import { notifyStockRestored } from '../../lib/emailApi'
 import Portal from '../../components/Portal'
 import { getProductSupplierIds } from '../../lib/suppliers'
+import { getCategoryLabel, flattenCategoriesForSelect } from '../../lib/categories'
 import './AdminTable.css'
 import './AdminSuppliers.css'
 import '../../components/StockAlertForm.css'
@@ -80,7 +81,7 @@ export default function AdminProducts() {
     dispatch({ type: 'PRODUCT_UPDATE', product: { ...p, active: !p.active } })
   }
 
-  const catName = id => categories.find(c => c.id === id)?.name ?? '—'
+  const catName = id => getCategoryLabel(categories, id)
   const toggleSupplier = (supplierId) => {
     setForm(f => {
       const ids = f.supplierIds || []
@@ -203,7 +204,11 @@ export default function AdminProducts() {
                 <label>Categoría</label>
                 <select value={form.categoryId} onChange={e => setForm(f => ({...f, categoryId: e.target.value}))}>
                   <option value="">Sin categoría</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {flattenCategoriesForSelect(categories).map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.depth ? `↳ ${c.label}` : c.label}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="form-row">

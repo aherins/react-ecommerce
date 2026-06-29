@@ -37,14 +37,16 @@ export async function syncCatalogAction(action) {
     }
 
     case 'CATEGORY_ADD': {
-      const { id, ...rest } = action.category
-      const { error } = await supabase.from('categories').insert({ id, ...rest })
+      const { id, parentId, ...rest } = action.category
+      const row = { id, ...rest, parentId: parentId || null }
+      const { error } = await supabase.from('categories').insert(row)
       if (error) console.error('CATEGORY_ADD:', error.message)
       break
     }
     case 'CATEGORY_UPDATE': {
-      const { id, ...rest } = action.category
-      const { error } = await supabase.from('categories').update(rest).eq('id', id)
+      const { id, parentId, ...rest } = action.category
+      const row = { ...rest, parentId: parentId || null }
+      const { error } = await supabase.from('categories').update(row).eq('id', id)
       if (error) console.error('CATEGORY_UPDATE:', error.message)
       break
     }

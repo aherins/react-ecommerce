@@ -1,4 +1,5 @@
 import { ORDER_STATUS_OPTIONS } from './admin'
+import { getCategoryLabel } from './categories'
 
 export const STATS_PERIODS = [
   { key: '30d', label: '30 días', days: 30 },
@@ -133,6 +134,7 @@ export function computeStoreStats(orders, products, categories, periodKey = '30d
     .slice(0, 5)
     .map(([id, qty]) => ({
       category: categories.find(c => c.id === id),
+      categoryLabel: getCategoryLabel(categories, id),
       qty,
     }))
     .filter(x => x.category)

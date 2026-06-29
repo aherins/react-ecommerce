@@ -1,14 +1,16 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { ShoppingBag, Menu, X, Settings, Heart, User, Package } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ShoppingBag, Menu, X, Settings, Heart, User, ChevronDown } from 'lucide-react'
 import { useStore } from '../context/StoreContext'
 import { useAuth } from '../context/AuthContext'
+import { getRootCategories, getChildCategories } from '../lib/categories'
 import './Navbar.css'
 
 export default function Navbar() {
   const { cartCount, wishlist, categories } = useStore()
   const { hasAdminAccess } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  const roots = getRootCategories(categories)
 
   return (
     <header className="navbar">
@@ -17,9 +19,35 @@ export default function Navbar() {
 
         <nav className={`navbar-nav ${menuOpen ? 'open' : ''}`}>
           <Link to="/" onClick={() => setMenuOpen(false)}>Tienda</Link>
-          {categories.map(c => (
-            <Link key={c.id} to={`/?cat=${c.slug}`} onClick={() => setMenuOpen(false)}>{c.name}</Link>
-          ))}
+          {roots.map(c => {
+            const subs = getChildCategories(categories, c.id)
+            if (subs.length === 0) {
+              return (
+                <Link key={c.id} to={`/?cat=${c.slug}`} onClick={() => setMenuOpen(false)}>
+                  {c.name}
+                </Link>
+              )
+            }
+            return (
+              <div key={c.id} className="navbar-cat-group">
+                <Link to={`/?cat=${c.slug}`} onClick={() => setMenuOpen(false)} className="navbar-cat-parent">
+                  {c.name}
+                  <ChevronDown size={14} className="navbar-cat-chevron"/>
+                </Link>
+                <div className="navbar-subcats">
+                  {subs.map(sub => (
+                    <Link
+                      key={sub.id}
+                      to={`/?cat=${c.slug}&sub=${sub.slug}`}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {sub.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
           <Link to="/contacto" onClick={() => setMenuOpen(false)}>Contacto</Link>
           <Link to="/seguimiento" onClick={() => setMenuOpen(false)}>Seguimiento</Link>
         </nav>

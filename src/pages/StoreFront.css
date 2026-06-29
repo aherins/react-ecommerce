@@ -76,6 +76,20 @@
 
 .filter-btn:hover { border-color: var(--ink); color: var(--ink); }
 .filter-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.filter-btn--parent-active { border-color: var(--ink); color: var(--ink); }
+
+.filter-subs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -24px 0 32px;
+  padding-left: 4px;
+}
+
+.filter-btn--sub {
+  font-size: 12px;
+  padding: 5px 12px;
+}
 
 .search-input {
   border: 1px solid var(--border);

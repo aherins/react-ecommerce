@@ -6,6 +6,12 @@ import PageMeta from '../components/PageMeta'
 import { useStore } from '../context/StoreContext'
 import { useAuth } from '../context/AuthContext'
 import { activity } from '../lib/activity'
+import {
+  getRootCategories,
+  getChildCategories,
+  resolveCategoryFilter,
+  productMatchesCategoryFilter,
+} from '../lib/categories'
 import './StoreFront.css'
 
 export default function StoreFront() {
@@ -25,11 +31,26 @@ export default function StoreFront() {
   }
 
   const activeCat = params.get('cat') || ''
+  const activeSub = params.get('sub') || ''
+  const categoryFilter = resolveCategoryFilter(categories, activeCat, activeSub)
+  const activeRoot = categoryFilter?.root
+  const subcategories = activeRoot ? getChildCategories(categories, activeRoot.id) : []
+
+  function setCategory(catSlug, subSlug = '') {
+    if (!catSlug) {
+      setParams({})
+      return
+    }
+    if (subSlug) {
+      setParams({ cat: catSlug, sub: subSlug })
+      return
+    }
+    setParams({ cat: catSlug })
+  }
 
   const filtered = products.filter(p => {
     if (!p.active) return false
-    const cat = categories.find(c => c.id === p.categoryId)
-    if (activeCat && cat?.slug !== activeCat) return false
+    if (!productMatchesCategoryFilter(p.categoryId, categoryFilter)) return false
     if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
@@ -55,14 +76,53 @@ export default function StoreFront() {
 
         <div className="shop-filters">
           <div className="filter-cats">
-            <button type="button" className={`filter-btn ${!activeCat ? 'active' : ''}`} onClick={() => setParams({})}>Todos</button>
-            {categories.map(c => (
-              <button key={c.id} type="button" className={`filter-btn ${activeCat === c.slug ? 'active' : ''}`}
-                onClick={() => setParams({ cat: c.slug })}>{c.name}</button>
+            <button
+              type="button"
+              className={`filter-btn ${!activeCat ? 'active' : ''}`}
+              onClick={() => setCategory('')}
+            >
+              Todos
+            </button>
+            {getRootCategories(categories).map(c => (
+              <button
+                key={c.id}
+                type="button"
+                className={`filter-btn ${activeCat === c.slug && !activeSub ? 'active' : ''} ${activeCat === c.slug && activeSub ? 'filter-btn--parent-active' : ''}`}
+                onClick={() => setCategory(c.slug)}
+              >
+                {c.name}
+              </button>
             ))}
           </div>
-          <input className="search-input" placeholder="Buscar…" value={search} onChange={e => handleSearch(e.target.value)}/>
+          <input
+            className="search-input"
+            placeholder="Buscar…"
+            value={search}
+            onChange={e => handleSearch(e.target.value)}
+          />
         </div>
+
+        {subcategories.length > 0 && activeCat && (
+          <div className="filter-subs">
+            <button
+              type="button"
+              className={`filter-btn filter-btn--sub ${activeCat && !activeSub ? 'active' : ''}`}
+              onClick={() => setCategory(activeCat)}
+            >
+              Todos en {activeRoot.name}
+            </button>
+            {subcategories.map(sub => (
+              <button
+                key={sub.id}
+                type="button"
+                className={`filter-btn filter-btn--sub ${activeSub === sub.slug ? 'active' : ''}`}
+                onClick={() => setCategory(activeCat, sub.slug)}
+              >
+                {sub.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         {!loading && filtered.length === 0 ? (
           <div className="shop-empty"><p>No hay productos que coincidan.</p></div>

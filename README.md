@@ -142,6 +142,7 @@ create table categories (
   id text primary key,
   name text not null,
   slug text not null unique,
+  "parentId" text references categories(id) on delete cascade,
   created_at timestamptz default now()
 );
 

@@ -31,8 +31,22 @@ export function catalogReducer(state, action) {
         ...state,
         categories: state.categories.map(c => c.id === action.category.id ? action.category : c),
       }
-    case 'CATEGORY_DELETE':
-      return { ...state, categories: state.categories.filter(c => c.id !== action.id) }
+    case 'CATEGORY_DELETE': {
+      const removeIds = new Set([action.id])
+      const collect = (parentId) => {
+        state.categories
+          .filter(c => c.parentId === parentId)
+          .forEach(c => {
+            removeIds.add(c.id)
+            collect(c.id)
+          })
+      }
+      collect(action.id)
+      return {
+        ...state,
+        categories: state.categories.filter(c => !removeIds.has(c.id)),
+      }
+    }
 
     case 'SET_COUPONS':
       return { ...state, coupons: action.coupons }
