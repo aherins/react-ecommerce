@@ -129,14 +129,24 @@ export default function AdminCustomerDetail() {
             : <span>{(customer.name || customer.email)[0].toUpperCase()}</span>}
         </div>
         <div>
-          <h1>{customer.name || customer.email}</h1>
+          <h1 className="customer-detail-title">
+            {customer.name || customer.email}
+            {customer.is_active_team && (
+              <span className="customer-badge customer-badge--team">
+                Equipo{customer.team_role_label ? ` · ${customer.team_role_label}` : ''}
+              </span>
+            )}
+            {customer.is_former_team && (
+              <span className="customer-badge customer-badge--former">Ex-equipo</span>
+            )}
+          </h1>
           <p>{customer.email}</p>
           <div className="customer-detail-meta">
             <span>Registro: {fmtDateTime(customer.registered_at)}</span>
             <span>Última visita: {fmtDateTime(customer.last_seen_at)}</span>
           </div>
         </div>
-        {canResetPassword && (
+        {canResetPassword && !customer.is_active_team && (
           <button
             type="button"
             className="customer-reset-pass-btn"

@@ -6,8 +6,12 @@ async function parseJson(res) {
   }
 }
 
-export async function fetchStoreCustomers(accessToken, q = '') {
-  const url = q ? `/api/list-store-customers?q=${encodeURIComponent(q)}` : '/api/list-store-customers'
+export async function fetchStoreCustomers(accessToken, q = '', segment = 'all') {
+  const params = new URLSearchParams()
+  if (q) params.set('q', q)
+  if (segment && segment !== 'all') params.set('segment', segment)
+  const qs = params.toString()
+  const url = qs ? `/api/list-store-customers?${qs}` : '/api/list-store-customers'
   const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
   const data = await parseJson(res)
   if (!res.ok) throw new Error(data.error || 'No se pudieron cargar los clientes.')

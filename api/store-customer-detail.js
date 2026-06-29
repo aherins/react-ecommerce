@@ -4,6 +4,17 @@ export const config = { runtime: 'edge' }
 
 const CRM_ROLES = ['superadmin', 'admin', 'editor', 'viewer']
 
+const ROLE_LABELS = {
+  superadmin: 'Super Admin',
+  admin: 'Administrador',
+  editor: 'Editor',
+  viewer: 'Visualizador',
+}
+
+function hasStoreActivity({ orderCount, eventCount, wishlistCount, lastSeenAt }) {
+  return orderCount > 0 || eventCount > 0 || wishlistCount > 0 || Boolean(lastSeenAt)
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -37,17 +48,16 @@ export default async function handler(req) {
     { headers: { ...headers, Accept: 'application/json' } },
   )
   const staffRows = staffRes.ok ? await staffRes.json() : []
-  if (Array.isArray(staffRows) && staffRows.length > 0) {
-    return json({ error: 'Este usuario es del equipo, no un cliente.' }, 400)
-  }
+  const activeTeamRole = Array.isArray(staffRows) && staffRows.length > 0 ? staffRows[0].role : null
 
   const profileRes = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=*`, {
     headers: { ...headers, Accept: 'application/vnd.pgrst.object+json' },
   })
   const profile = profileRes.ok ? await profileRes.json() : null
-  if (profile?.account_type === 'staff' || authUser.user_metadata?.is_staff) {
-    return json({ error: 'Este usuario es del equipo, no un cliente.' }, 400)
-  }
+  const isActiveTeam = Boolean(activeTeamRole)
+  const isFormerTeam = !isActiveTeam && (
+    Boolean(authUser.user_metadata?.is_staff) || profile?.account_type === 'staff'
+  )
 
   const emailEnc = encodeURIComponent(authUser.email || '')
   const [eventsRes, wishlistRes, notesRes, ordersRes, productsRes] = await Promise.all([
@@ -76,6 +86,17 @@ export default async function handler(req) {
   const products = productsRes.ok ? await productsRes.json() : []
   const productById = Object.fromEntries(products.map(p => [p.id, p]))
 
+  const isTeamRelated = isActiveTeam || isFormerTeam
+  const hasActivity = hasStoreActivity({
+    orderCount: orders.length,
+    eventCount: events.length,
+    wishlistCount: wishlist.length,
+    lastSeenAt: profile?.last_seen_at,
+  })
+  if (isTeamRelated && !hasActivity) {
+    return json({ error: 'Este usuario del equipo no tiene actividad en la tienda.' }, 400)
+  }
+
   const authorIds = [...new Set(notes.map(n => n.author_id).filter(Boolean))]
   const authors = {}
   await Promise.all(authorIds.map(async (aid) => {
@@ -95,6 +116,10 @@ export default async function handler(req) {
       last_seen_at: profile?.last_seen_at || null,
       avatar_url: profile?.avatar_url || authUser.user_metadata?.avatar_url || null,
       must_change_password: Boolean(authUser.user_metadata?.must_change_password),
+      is_active_team: isActiveTeam,
+      is_former_team: isFormerTeam,
+      team_role: activeTeamRole,
+      team_role_label: activeTeamRole ? (ROLE_LABELS[activeTeamRole] || activeTeamRole) : null,
     },
     orders,
     events: events.map(e => ({

@@ -340,7 +340,7 @@ export default function AdminUsers() {
         <Portal><div className="modal-overlay">
           <div className="modal modal-sm">
             <div className="modal-header"><h2>Eliminar acceso</h2></div>
-            <div className="modal-body"><p>¿Eliminar el acceso al panel de este usuario? No se elimina su cuenta, solo sus permisos.</p></div>
+            <div className="modal-body"><p>¿Eliminar el acceso al panel de este usuario? No se elimina su cuenta, solo sus permisos. Si ha comprado o navegado en la tienda, seguirá visible en Clientes como ex-equipo.</p></div>
             <div className="modal-footer">
               <button className="btn-cancel" onClick={() => setDelId(null)}>Cancelar</button>
               <button className="btn-danger" onClick={() => handleDelete(delId)}><Trash2 size={14}/>Eliminar</button>

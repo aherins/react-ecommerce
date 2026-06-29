@@ -46,12 +46,6 @@ export default async function handler(req) {
     return json({ error: `No se pudo quitar el acceso: ${err}` }, 500)
   }
 
-  await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}`, {
-    method: 'PATCH',
-    headers: { ...headers, Prefer: 'return=minimal' },
-    body: JSON.stringify({ account_type: 'staff' }),
-  })
-
   await fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, {
     method: 'PUT',
     headers,
