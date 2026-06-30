@@ -55,7 +55,10 @@ export function CartProvider({ children }) {
       return
     }
     customerSync.fetchWishlist(user.id).then(ids => {
-      const merged = [...new Set([...loadLocal('wishlist'), ...ids])]
+      const localIds = loadLocal('wishlist') || []
+      const merged = localIds.length > 0
+        ? [...new Set(localIds)]
+        : [...new Set(ids)]
       dispatch({ type: 'SET_WISHLIST', wishlist: merged })
       wishlistHydrated.current = true
       customerSync.syncWishlist(user.id, merged)

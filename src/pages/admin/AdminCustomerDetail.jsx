@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase, hasSupabase } from '../../lib/supabase'
 import { fetchStoreCustomerDetail, addCustomerNote, resetCustomerPassword } from '../../lib/customersApi'
 import { ORDER_STATUS_LABEL } from '../../lib/admin'
-import { buildCustomerTimeline, getTimelineEventLabel, buildProductViewStats, mergeWishlistSources } from '../../lib/customerTimeline'
+import { buildCustomerTimeline, getTimelineEventLabel, buildProductViewStats } from '../../lib/customerTimeline'
 import './AdminCustomers.css'
 
 function fmtDateTime(iso) {
@@ -108,12 +108,7 @@ export default function AdminCustomerDetail() {
   )
   if (!data) return null
 
-  const { customer, stats, orders, events, wishlist: wishlistRaw, notes, product_views: productViewsRaw } = data
-  const wishlistFromEvents = mergeWishlistSources(
-    [],
-    events.filter(e => e.event_type === 'wishlist_add' || e.event_type === 'wishlist_remove'),
-  )
-  const wishlist = (wishlistRaw?.length ? wishlistRaw : wishlistFromEvents)
+  const { customer, stats, orders, events, wishlist = [], notes, product_views: productViewsRaw } = data
   const productViews = productViewsRaw ?? buildProductViewStats(
     events.filter(e => e.event_type === 'product_view'),
     Object.fromEntries(

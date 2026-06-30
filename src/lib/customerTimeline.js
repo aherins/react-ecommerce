@@ -80,26 +80,32 @@ export function reconstructWishlistFromEvents(eventRows) {
       state.delete(e.product_id)
     }
   }
-  return [...state.entries()].map(([product_id, meta]) => ({
-    product_id,
-    added_at: meta.added_at,
-  }))
+  return dedupeWishlist(
+    [...state.entries()].map(([product_id, meta]) => ({
+      product_id,
+      added_at: meta.added_at,
+    })),
+  )
 }
 
-export function mergeWishlistSources(dbItems, eventRows) {
-  const eventProductIds = new Set(
-    (eventRows || []).map(e => e.product_id).filter(Boolean),
-  )
-  const fromEvents = reconstructWishlistFromEvents(eventRows)
-  const byId = new Map(fromEvents.map(w => [w.product_id, w]))
-  for (const w of dbItems || []) {
-    if (!eventProductIds.has(w.product_id)) {
-      byId.set(w.product_id, w)
-    }
+function dedupeWishlist(items) {
+  const byId = new Map()
+  for (const w of items || []) {
+    if (!w?.product_id) continue
+    if (!byId.has(w.product_id)) byId.set(w.product_id, w)
   }
   return [...byId.values()].sort(
     (a, b) => new Date(b.added_at || 0) - new Date(a.added_at || 0),
   )
+}
+
+export function mergeWishlistSources(dbItems, eventRows) {
+  const fromDb = dedupeWishlist(dbItems)
+  const fromEvents = reconstructWishlistFromEvents(eventRows)
+  if (!eventRows?.length) return fromDb
+  if (!fromDb.length) return fromEvents
+  const hasRemoves = eventRows.some(e => e.event_type === 'wishlist_remove')
+  return hasRemoves ? fromEvents : fromDb
 }
 
 export { EVENT_LABELS }
