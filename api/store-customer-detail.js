@@ -1,4 +1,5 @@
 import { adminHeaders, getSupabaseConfig, verifyAdminRole } from './supabaseAdmin.js'
+import { mergeWishlistSources } from './customerWishlist.js'
 
 export const config = { runtime: 'edge' }
 
@@ -60,7 +61,7 @@ export default async function handler(req) {
   )
 
   const emailEnc = encodeURIComponent(authUser.email || '')
-  const [eventsRes, viewEventsRes, wishlistRes, notesRes, ordersRes, productsRes] = await Promise.all([
+  const [eventsRes, viewEventsRes, wishlistRes, wishlistEventsRes, notesRes, ordersRes, productsRes] = await Promise.all([
     fetch(`${supabaseUrl}/rest/v1/customer_events?user_id=eq.${userId}&select=*&order=created_at.desc&limit=40`, {
       headers: { ...headers, Accept: 'application/json' },
     }),
@@ -71,6 +72,10 @@ export default async function handler(req) {
     fetch(`${supabaseUrl}/rest/v1/wishlist_items?user_id=eq.${userId}&select=product_id,added_at&order=added_at.desc`, {
       headers: { ...headers, Accept: 'application/json' },
     }),
+    fetch(
+      `${supabaseUrl}/rest/v1/customer_events?user_id=eq.${userId}&event_type=in.(wishlist_add,wishlist_remove)&select=product_id,event_type,created_at&order=created_at.asc`,
+      { headers: { ...headers, Accept: 'application/json' } },
+    ),
     fetch(`${supabaseUrl}/rest/v1/customer_notes?user_id=eq.${userId}&select=id,body,created_at,author_id&order=created_at.desc`, {
       headers: { ...headers, Accept: 'application/json' },
     }),
@@ -85,7 +90,9 @@ export default async function handler(req) {
 
   const events = eventsRes.ok ? await eventsRes.json() : []
   const viewEvents = viewEventsRes.ok ? await viewEventsRes.json() : []
-  const wishlist = wishlistRes.ok ? await wishlistRes.json() : []
+  const wishlistDb = wishlistRes.ok ? await wishlistRes.json() : []
+  const wishlistEvents = wishlistEventsRes.ok ? await wishlistEventsRes.json() : []
+  const wishlist = mergeWishlistSources(wishlistDb, wishlistEvents)
   const notes = notesRes.ok ? await notesRes.json() : []
   const orders = ordersRes.ok ? await ordersRes.json() : []
   const products = productsRes.ok ? await productsRes.json() : []

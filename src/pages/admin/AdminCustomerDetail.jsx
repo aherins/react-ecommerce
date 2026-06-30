@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase, hasSupabase } from '../../lib/supabase'
 import { fetchStoreCustomerDetail, addCustomerNote, resetCustomerPassword } from '../../lib/customersApi'
 import { ORDER_STATUS_LABEL } from '../../lib/admin'
-import { buildCustomerTimeline, getTimelineEventLabel, buildProductViewStats } from '../../lib/customerTimeline'
+import { buildCustomerTimeline, getTimelineEventLabel, buildProductViewStats, mergeWishlistSources } from '../../lib/customerTimeline'
 import './AdminCustomers.css'
 
 function fmtDateTime(iso) {
@@ -108,7 +108,12 @@ export default function AdminCustomerDetail() {
   )
   if (!data) return null
 
-  const { customer, stats, orders, events, wishlist, notes, product_views: productViewsRaw } = data
+  const { customer, stats, orders, events, wishlist: wishlistRaw, notes, product_views: productViewsRaw } = data
+  const wishlistFromEvents = mergeWishlistSources(
+    [],
+    events.filter(e => e.event_type === 'wishlist_add' || e.event_type === 'wishlist_remove'),
+  )
+  const wishlist = (wishlistRaw?.length ? wishlistRaw : wishlistFromEvents)
   const productViews = productViewsRaw ?? buildProductViewStats(
     events.filter(e => e.event_type === 'product_view'),
     Object.fromEntries(
@@ -117,12 +122,13 @@ export default function AdminCustomerDetail() {
   )
   const viewsTotal = stats.views_total ?? stats.views_count ?? productViews.reduce((s, v) => s + v.count, 0)
   const viewsUnique = stats.views_unique ?? productViews.length
+  const wishlistCount = stats.wishlist_count ?? wishlist.length
   const tabs = [
     { key: 'resumen', label: 'Resumen', icon: Package },
     { key: 'historial', label: 'Historial', icon: History },
     { key: 'pedidos', label: `Pedidos (${orders.length})`, icon: ShoppingBag },
     { key: 'actividad', label: 'Actividad', icon: Eye },
-    { key: 'deseos', label: `Deseos (${wishlist.length})`, icon: Heart },
+    { key: 'deseos', label: `Deseos (${wishlistCount})`, icon: Heart },
     { key: 'notas', label: `Notas (${notes.length})`, icon: MessageSquare },
   ]
 
@@ -176,7 +182,7 @@ export default function AdminCustomerDetail() {
           <strong>{viewsTotal} visitas · {viewsUnique} productos</strong>
           <span>Vistas de ficha</span>
         </div>
-        <div className="customer-stat"><strong>{stats.wishlist_count}</strong><span>En deseos</span></div>
+        <div className="customer-stat"><strong>{wishlistCount}</strong><span>En deseos</span></div>
       </div>
 
       <nav className="customer-tabs">
@@ -337,16 +343,34 @@ export default function AdminCustomerDetail() {
         {tab === 'deseos' && (
           <div className="customer-wishlist-grid">
             {wishlist.length === 0 && <p className="muted">Lista de deseos vacía</p>}
-            {wishlist.map(w => w.product && (
-              <div key={w.product_id} className="customer-wish-card">
-                <img src={w.product.image} alt={w.product.name}/>
-                <div>
-                  <p>{w.product.name}</p>
-                  <span>{w.product.price.toFixed(2)} €</span>
-                  <small>{fmtDateTime(w.added_at)}</small>
-                </div>
-              </div>
-            ))}
+            {wishlist.map(w => {
+              const productId = w.product_id || w.product?.id
+              if (!productId) return null
+              const productUrl = `/producto/${productId}`
+              return (
+                <article key={productId} className="customer-wish-card">
+                  <Link to={productUrl} className="customer-wish-card-media" target="_blank" rel="noreferrer">
+                    {w.product?.image ? (
+                      <img src={w.product.image} alt={w.product.name || ''}/>
+                    ) : (
+                      <div className="customer-wish-card-media-fallback"/>
+                    )}
+                  </Link>
+                  <div className="customer-wish-card-body">
+                    <Link to={productUrl} className="customer-wish-card-title" target="_blank" rel="noreferrer">
+                      {w.product?.name || productId}
+                    </Link>
+                    {w.product?.price != null && (
+                      <span>{Number(w.product.price).toFixed(2)} €</span>
+                    )}
+                    <small>Añadido: {fmtDateTime(w.added_at)}</small>
+                    <Link to={productUrl} className="customer-wish-card-link" target="_blank" rel="noreferrer">
+                      Ver en tienda <ExternalLink size={11}/>
+                    </Link>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         )}
 

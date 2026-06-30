@@ -31,12 +31,13 @@ export const customerSync = {
 
   async trackEvent(userId, eventType, productId = null, metadata = {}) {
     if (!hasSupabase || !userId) return
-    await supabase.from('customer_events').insert({
+    const { error } = await supabase.from('customer_events').insert({
       user_id: userId,
       event_type: eventType,
       product_id: productId,
       metadata,
     })
+    if (error) console.error('customer_event:', error.message)
     await this.touchLastSeen(userId)
   },
 
@@ -52,10 +53,15 @@ export const customerSync = {
   async syncWishlist(userId, productIds) {
     if (!hasSupabase || !userId) return
 
-    const { data: current } = await supabase
+    const { data: current, error: readErr } = await supabase
       .from('wishlist_items')
       .select('product_id')
       .eq('user_id', userId)
+
+    if (readErr) {
+      console.error('wishlist read:', readErr.message)
+      return
+    }
 
     const currentIds = new Set((current || []).map(r => r.product_id))
     const nextIds = new Set(productIds)
@@ -64,18 +70,20 @@ export const customerSync = {
     const toRemove = [...currentIds].filter(id => !nextIds.has(id))
 
     if (toRemove.length) {
-      await supabase
+      const { error } = await supabase
         .from('wishlist_items')
         .delete()
         .eq('user_id', userId)
         .in('product_id', toRemove)
+      if (error) console.error('wishlist remove:', error.message)
     }
 
     if (toAdd.length) {
-      await supabase.from('wishlist_items').upsert(
+      const { error } = await supabase.from('wishlist_items').upsert(
         toAdd.map(product_id => ({ user_id: userId, product_id })),
         { onConflict: 'user_id,product_id' },
       )
+      if (error) console.error('wishlist add:', error.message)
     }
   },
 }

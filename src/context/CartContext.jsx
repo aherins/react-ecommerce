@@ -9,6 +9,29 @@ import { loadLocal, saveLocal } from './store/helpers'
 
 const CartContext = createContext(null)
 
+function nextWishlist(state, action) {
+  switch (action.type) {
+    case 'WISHLIST_TOGGLE': {
+      const has = state.wishlist.includes(action.productId)
+      return has
+        ? state.wishlist.filter(id => id !== action.productId)
+        : [...state.wishlist, action.productId]
+    }
+    case 'WISHLIST_ADD':
+      return state.wishlist.includes(action.productId)
+        ? state.wishlist
+        : [...state.wishlist, action.productId]
+    case 'WISHLIST_ADD_ALL_FROM_CART': {
+      const ids = state.cart.map(i => i.productId)
+      return [...new Set([...state.wishlist, ...ids])]
+    }
+    case 'SET_WISHLIST':
+      return action.wishlist || []
+    default:
+      return null
+  }
+}
+
 export function CartProvider({ children }) {
   const { user } = useAuth()
   const { products } = useCatalog()
@@ -35,6 +58,7 @@ export function CartProvider({ children }) {
       const merged = [...new Set([...loadLocal('wishlist'), ...ids])]
       dispatch({ type: 'SET_WISHLIST', wishlist: merged })
       wishlistHydrated.current = true
+      customerSync.syncWishlist(user.id, merged)
     })
   }, [user?.id])
 
@@ -44,6 +68,9 @@ export function CartProvider({ children }) {
   }, [state.wishlist, user?.id])
 
   const smartDispatch = useCallback((action) => {
+    const wishlistAction = ['WISHLIST_TOGGLE', 'WISHLIST_ADD', 'WISHLIST_ADD_ALL_FROM_CART'].includes(action.type)
+    const next = wishlistAction ? nextWishlist(state, action) : null
+
     if (action.type === 'WISHLIST_TOGGLE' && user?.id) {
       const has = state.wishlist.includes(action.productId)
       activity.trackWishlist(action.productId, !has, user.id)
@@ -59,7 +86,12 @@ export function CartProvider({ children }) {
         .filter(id => !state.wishlist.includes(id))
         .forEach(id => activity.trackWishlist(id, true, user.id))
     }
+
     dispatch(action)
+
+    if (user?.id && hasSupabase && next) {
+      customerSync.syncWishlist(user.id, next)
+    }
     if (action.type === 'CART_ADD') activity.trackCartAdd(action.productId, user?.id)
   }, [user?.id, state.wishlist, state.cart])
 
