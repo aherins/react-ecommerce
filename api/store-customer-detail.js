@@ -60,10 +60,14 @@ export default async function handler(req) {
   )
 
   const emailEnc = encodeURIComponent(authUser.email || '')
-  const [eventsRes, wishlistRes, notesRes, ordersRes, productsRes] = await Promise.all([
+  const [eventsRes, viewEventsRes, wishlistRes, notesRes, ordersRes, productsRes] = await Promise.all([
     fetch(`${supabaseUrl}/rest/v1/customer_events?user_id=eq.${userId}&select=*&order=created_at.desc&limit=40`, {
       headers: { ...headers, Accept: 'application/json' },
     }),
+    fetch(
+      `${supabaseUrl}/rest/v1/customer_events?user_id=eq.${userId}&event_type=eq.product_view&select=product_id,created_at&order=created_at.desc`,
+      { headers: { ...headers, Accept: 'application/json' } },
+    ),
     fetch(`${supabaseUrl}/rest/v1/wishlist_items?user_id=eq.${userId}&select=product_id,added_at&order=added_at.desc`, {
       headers: { ...headers, Accept: 'application/json' },
     }),
@@ -80,11 +84,33 @@ export default async function handler(req) {
   ])
 
   const events = eventsRes.ok ? await eventsRes.json() : []
+  const viewEvents = viewEventsRes.ok ? await viewEventsRes.json() : []
   const wishlist = wishlistRes.ok ? await wishlistRes.json() : []
   const notes = notesRes.ok ? await notesRes.json() : []
   const orders = ordersRes.ok ? await ordersRes.json() : []
   const products = productsRes.ok ? await productsRes.json() : []
   const productById = Object.fromEntries(products.map(p => [p.id, p]))
+
+  const productViews = []
+  const viewCountByProduct = {}
+  for (const e of viewEvents) {
+    if (!e.product_id) continue
+    viewCountByProduct[e.product_id] = (viewCountByProduct[e.product_id] || 0) + 1
+    if (!productViews.find(v => v.product_id === e.product_id)) {
+      productViews.push({
+        product_id: e.product_id,
+        last_viewed_at: e.created_at,
+        product: productById[e.product_id] || null,
+      })
+    }
+  }
+  productViews.forEach(v => {
+    v.count = viewCountByProduct[v.product_id] || 0
+  })
+  productViews.sort((a, b) => b.count - a.count || new Date(b.last_viewed_at) - new Date(a.last_viewed_at))
+
+  const viewsTotal = viewEvents.length
+  const viewsUnique = productViews.length
 
   const isTeamRelated = isActiveTeam || isFormerTeam
   const hasActivity = hasStoreActivity({
@@ -134,11 +160,14 @@ export default async function handler(req) {
       ...n,
       author_name: authors[n.author_id] || 'Equipo',
     })),
+    product_views: productViews,
     stats: {
       order_count: orders.length,
       total_spent: orders.reduce((s, o) => s + (Number(o.total) || 0), 0),
       wishlist_count: wishlist.length,
-      views_count: events.filter(e => e.event_type === 'product_view').length,
+      views_total: viewsTotal,
+      views_unique: viewsUnique,
+      views_count: viewsTotal,
     },
   })
 }

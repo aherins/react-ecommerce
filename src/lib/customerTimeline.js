@@ -43,4 +43,28 @@ export function getTimelineEventLabel(event) {
   return EVENT_LABELS[event?.event_type] || event?.event_type
 }
 
+export function buildProductViewStats(viewEvents, productById = {}) {
+  const byProduct = {}
+
+  for (const e of viewEvents || []) {
+    if (!e.product_id) continue
+    if (!byProduct[e.product_id]) {
+      byProduct[e.product_id] = { count: 0, last_viewed_at: e.created_at }
+    }
+    byProduct[e.product_id].count += 1
+    if (e.created_at > byProduct[e.product_id].last_viewed_at) {
+      byProduct[e.product_id].last_viewed_at = e.created_at
+    }
+  }
+
+  return Object.entries(byProduct)
+    .map(([product_id, { count, last_viewed_at }]) => ({
+      product_id,
+      count,
+      last_viewed_at,
+      product: productById[product_id] || null,
+    }))
+    .sort((a, b) => b.count - a.count || new Date(b.last_viewed_at) - new Date(a.last_viewed_at))
+}
+
 export { EVENT_LABELS }

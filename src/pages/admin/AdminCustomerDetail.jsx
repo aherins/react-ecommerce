@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase, hasSupabase } from '../../lib/supabase'
 import { fetchStoreCustomerDetail, addCustomerNote, resetCustomerPassword } from '../../lib/customersApi'
 import { ORDER_STATUS_LABEL } from '../../lib/admin'
-import { buildCustomerTimeline, getTimelineEventLabel } from '../../lib/customerTimeline'
+import { buildCustomerTimeline, getTimelineEventLabel, buildProductViewStats } from '../../lib/customerTimeline'
 import './AdminCustomers.css'
 
 function fmtDateTime(iso) {
@@ -108,7 +108,15 @@ export default function AdminCustomerDetail() {
   )
   if (!data) return null
 
-  const { customer, stats, orders, events, wishlist, notes } = data
+  const { customer, stats, orders, events, wishlist, notes, product_views: productViewsRaw } = data
+  const productViews = productViewsRaw ?? buildProductViewStats(
+    events.filter(e => e.event_type === 'product_view'),
+    Object.fromEntries(
+      events.filter(e => e.product_id && e.product).map(e => [e.product_id, e.product]),
+    ),
+  )
+  const viewsTotal = stats.views_total ?? stats.views_count ?? productViews.reduce((s, v) => s + v.count, 0)
+  const viewsUnique = stats.views_unique ?? productViews.length
   const tabs = [
     { key: 'resumen', label: 'Resumen', icon: Package },
     { key: 'historial', label: 'Historial', icon: History },
@@ -164,7 +172,10 @@ export default function AdminCustomerDetail() {
       <div className="customer-stats-row">
         <div className="customer-stat"><strong>{stats.order_count}</strong><span>Pedidos</span></div>
         <div className="customer-stat"><strong>{stats.total_spent.toFixed(2)} €</strong><span>Gastado</span></div>
-        <div className="customer-stat"><strong>{stats.views_count}</strong><span>Productos vistos</span></div>
+        <div className="customer-stat customer-stat--views">
+          <strong>{viewsTotal} visitas · {viewsUnique} productos</strong>
+          <span>Vistas de ficha</span>
+        </div>
         <div className="customer-stat"><strong>{stats.wishlist_count}</strong><span>En deseos</span></div>
       </div>
 
@@ -267,19 +278,60 @@ export default function AdminCustomerDetail() {
         )}
 
         {tab === 'actividad' && (
-          <ul className="customer-timeline">
-            {events.length === 0 && <li className="muted">Sin actividad registrada (solo se guarda con sesión iniciada)</li>}
-            {events.map(e => (
-              <li key={e.id}>
-                <span className="timeline-time">{fmtDateTime(e.created_at)}</span>
-                <span className="timeline-type">{getTimelineEventLabel(e)}</span>
-                {e.product && <span className="timeline-product">{e.product.name}</span>}
-                {e.event_type === 'search' && e.metadata?.query && (
-                  <span className="timeline-product"><Search size={12}/> «{e.metadata.query}»</span>
-                )}
-              </li>
-            ))}
-          </ul>
+          <div className="customer-activity-panel">
+            {productViews.length > 0 && (
+              <section className="customer-product-views">
+                <h3>Productos vistos</h3>
+                <p className="customer-product-views-summary muted">
+                  {viewsTotal} visitas a ficha · {viewsUnique} producto{viewsUnique !== 1 ? 's' : ''} distinto{viewsUnique !== 1 ? 's' : ''}
+                </p>
+                <ul className="customer-product-views-list">
+                  {productViews.map(v => (
+                    <li key={v.product_id} className="customer-product-view-row">
+                      {v.product?.image ? (
+                        <img src={v.product.image} alt="" className="customer-product-view-thumb"/>
+                      ) : (
+                        <div className="customer-product-view-thumb customer-product-view-thumb--empty"/>
+                      )}
+                      <div className="customer-product-view-info">
+                        <strong>{v.product?.name || v.product_id}</strong>
+                        {v.product?.price != null && (
+                          <span>{Number(v.product.price).toFixed(2)} €</span>
+                        )}
+                        <small>Última visita: {fmtDateTime(v.last_viewed_at)}</small>
+                      </div>
+                      <div className="customer-product-view-count">
+                        <strong>{v.count}</strong>
+                        <span>{v.count === 1 ? 'visita' : 'visitas'}</span>
+                      </div>
+                      {v.product && (
+                        <Link to={`/producto/${v.product_id}`} className="customer-product-view-link" target="_blank" rel="noreferrer">
+                          Ver <ExternalLink size={11}/>
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <section className="customer-activity-log">
+              <h3>Registro de actividad</h3>
+              <ul className="customer-timeline">
+                {events.length === 0 && <li className="muted">Sin actividad registrada (solo se guarda con sesión iniciada)</li>}
+                {events.map(e => (
+                  <li key={e.id}>
+                    <span className="timeline-time">{fmtDateTime(e.created_at)}</span>
+                    <span className="timeline-type">{getTimelineEventLabel(e)}</span>
+                    {e.product && <span className="timeline-product">{e.product.name}</span>}
+                    {e.event_type === 'search' && e.metadata?.query && (
+                      <span className="timeline-product"><Search size={12}/> «{e.metadata.query}»</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
         )}
 
         {tab === 'deseos' && (
