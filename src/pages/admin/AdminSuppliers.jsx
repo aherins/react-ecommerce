@@ -167,7 +167,7 @@ export default function AdminSuppliers() {
       {form && (
         <Portal>
           <div className="modal-overlay" onClick={e => e.target === e.currentTarget && closeForm()}>
-            <div className="modal">
+            <div className="modal modal-md">
               <div className="modal-header">
                 <h2>{form.id ? 'Editar proveedor' : 'Nuevo proveedor'}</h2>
                 <button onClick={closeForm}><X size={20}/></button>
